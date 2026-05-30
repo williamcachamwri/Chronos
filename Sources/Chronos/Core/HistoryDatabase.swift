@@ -204,6 +204,14 @@ actor HistoryDatabase {
         return try decodeEvents(stmt: stmt)
     }
 
+    func eventCount() throws -> Int {
+        let sql = "SELECT COUNT(*) FROM events"
+        let stmt = try prepare(sql)
+        defer { sqlite3_finalize(stmt) }
+        guard sqlite3_step(stmt) == SQLITE_ROW else { return 0 }
+        return Int(sqlite3_column_int(stmt, 0))
+    }
+
     // MARK: - Time range
 
     func timeRange() throws -> (earliest: Date, latest: Date)? {

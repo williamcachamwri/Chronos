@@ -2,12 +2,14 @@ import SwiftUI
 
 struct DiffView: View {
     @StateObject private var browser = HistoryBrowser.shared
+    @Environment(\.colorScheme) var scheme
     @State private var fromFraction: Double = 0.0
     @State private var toFraction: Double = 1.0
     @State private var diffs: [FileDiff] = []
     @State private var isLoading = false
     @State private var filter: DiffFilter = .all
     @State private var hoverItem: String?
+    @State private var hasRun = false
 
     enum DiffFilter: String, CaseIterable {
         case all = "All"
@@ -26,64 +28,69 @@ struct DiffView: View {
     }
 
     var body: some View {
+        let t = Theme(isDark: scheme == .dark)
         VStack(spacing: 0) {
-            topBar
-            controls
-            listSection
+            topBar(t: t)
+            controls(t: t)
+            listSection(t: t)
         }
     }
 
-    private var topBar: some View {
+    private func topBar(t: Theme) -> some View {
         HStack {
             Text("Diff")
-                .font(AppFont.bodyM)
-                .foregroundColor(AppColors.text)
+                .font(F.bodyM)
+                .foregroundColor(t.text)
             Spacer()
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
     }
 
-    private var controls: some View {
-        VStack(spacing: 16) {
-            HStack(spacing: 16) {
-                datePicker(label: "From", fraction: $fromFraction, range: browser.timeRange)
-                datePicker(label: "To",   fraction: $toFraction,   range: browser.timeRange)
-            }
-
-            HStack(spacing: 8) {
-                ChronosButton(title: "Compare", icon: "arrow.left.arrow.right") { runDiff() }
-                Spacer()
-                Picker("", selection: $filter) {
-                    ForEach(DiffFilter.allCases, id: \.self) { f in
-                        Text(f.rawValue).tag(f)
-                    }
+    private func controls(t: Theme) -> some View {
+        Glass(radius: 12) {
+            VStack(spacing: 16) {
+                HStack(spacing: 16) {
+                    datePicker(label: "From", fraction: $fromFraction, range: browser.timeRange, t: t)
+                    datePicker(label: "To",   fraction: $toFraction,   range: browser.timeRange, t: t)
                 }
-                .pickerStyle(.segmented)
-                .frame(width: 220)
+
+                HStack(spacing: 8) {
+                    GlassButton(title: "Compare", icon: "arrow.left.arrow.right") { runDiff() }
+                    Spacer()
+                    Picker("", selection: $filter) {
+                        ForEach(DiffFilter.allCases, id: \.self) { f in
+                            Text(f.rawValue).tag(f)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 220)
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 14)
+        .padding(.vertical, 8)
     }
 
-    private func datePicker(label: String, fraction: Binding<Double>, range: (earliest: Date, latest: Date)?) -> some View {
+    private func datePicker(label: String, fraction: Binding<Double>, range: (earliest: Date, latest: Date)?, t: Theme) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
-                .font(AppFont.label)
-                .foregroundColor(AppColors.muted)
+                .font(F.label)
+                .foregroundColor(t.muted)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(AppColors.dim.opacity(0.4))
+                        .fill(t.dim.opacity(0.4))
                         .frame(height: 6)
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(AppColors.accent.opacity(0.7))
+                        .fill(t.accent.opacity(0.7))
                         .frame(width: max(0, geo.size.width * fraction.wrappedValue), height: 6)
                     Circle()
-                        .fill(AppColors.accent)
+                        .fill(t.accent)
                         .frame(width: 14, height: 14)
-                        .shadow(color: AppColors.accent.opacity(0.4), radius: 6)
+                        .shadow(color: t.accentGlow, radius: 6)
                         .offset(x: geo.size.width * fraction.wrappedValue - 7)
                 }
                 .contentShape(Rectangle())
@@ -97,26 +104,36 @@ struct DiffView: View {
             .frame(height: 20)
             if let range = range {
                 Text(dateAt(fraction: fraction.wrappedValue, range: range), style: .date)
-                    .font(AppFont.time)
-                    .foregroundColor(AppColors.muted)
+                    .font(F.time)
+                    .foregroundColor(t.muted)
             }
         }
     }
 
-    private var listSection: some View {
+    private func listSection(t: Theme) -> some View {
         ScrollView {
-            LazyVStack(spacing: 2) {
+            LazyVStack(spacing: 3) {
                 if isLoading {
-                    ProgressView()
-                        .padding(40)
-                } else if filteredDiffs.isEmpty {
-                    emptyState("Run a comparison to see changes.")
+                    ForEach(0..<4, id: \.self) { i in
+                        HStack {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(t.dim.opacity(0.3))
+                                .frame(height: 36)
+                        }
+                        .padding(.horizontal, 12)
+                        .shimmer()
+                        .reveal(delay: Double(i) * 0.05)
+                    }
+                } else if filteredDiffs.isEmpty && hasRun {
+                    emptyState("No changes between these two moments.", t: t)
+                } else if !hasRun {
+                    emptyState("Pick two moments and hit Compare.", t: t)
                 } else {
                     ForEach(filteredDiffs.indices, id: \.self) { i in
                         let diff = filteredDiffs[i]
-                        DiffRow(diff: diff, isHovered: hoverItem == diff.path)
+                        DiffRow(diff: diff, isHovered: hoverItem == diff.path, t: t)
                             .onHover { hovering in
-                                withAnimation(Smooth.fast) {
+                                withAnimation(A.fast) {
                                     hoverItem = hovering ? diff.path : nil
                                 }
                             }
@@ -129,17 +146,18 @@ struct DiffView: View {
         }
     }
 
-    private func emptyState(_ msg: String) -> some View {
+    private func emptyState(_ msg: String, t: Theme) -> some View {
         VStack(spacing: 10) {
             Image(systemName: "arrow.left.arrow.right")
                 .font(.system(size: 32))
-                .foregroundColor(AppColors.muted.opacity(0.15))
+                .foregroundColor(t.muted.opacity(0.15))
             Text(msg)
-                .font(AppFont.bodyS)
-                .foregroundColor(AppColors.muted)
+                .font(F.bodyS)
+                .foregroundColor(t.muted)
         }
         .frame(maxWidth: .infinity, minHeight: 200)
         .padding()
+        .reveal(delay: 0.1)
     }
 
     private func runDiff() {
@@ -149,6 +167,7 @@ struct DiffView: View {
         let from = range.earliest.addingTimeInterval(total * fromFraction)
         let to   = range.earliest.addingTimeInterval(total * toFraction)
         isLoading = true
+        hasRun = true
         Task {
             diffs = await browser.diff(folderPath: browser.currentFolder, from: from, to: to)
             isLoading = false
@@ -164,6 +183,7 @@ struct DiffView: View {
 struct DiffRow: View {
     let diff: FileDiff
     let isHovered: Bool
+    let t: Theme
 
     var body: some View {
         HStack(spacing: 12) {
@@ -171,21 +191,21 @@ struct DiffRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(diff.name)
-                    .font(AppFont.bodyS)
-                    .foregroundColor(AppColors.text)
+                    .font(F.bodyS)
+                    .foregroundColor(t.text)
                     .lineLimit(1)
 
                 if diff.status == .modified {
                     HStack(spacing: 4) {
                         Text(byteString(diff.oldSize))
-                            .font(AppFont.time)
-                            .foregroundColor(AppColors.muted)
+                            .font(F.time)
+                            .foregroundColor(t.muted)
                         Image(systemName: "arrow.right")
                             .font(.system(size: 8))
-                            .foregroundColor(AppColors.muted)
+                            .foregroundColor(t.muted)
                         Text(byteString(diff.newSize))
-                            .font(AppFont.time)
-                            .foregroundColor(AppColors.text)
+                            .font(F.time)
+                            .foregroundColor(t.text)
                     }
                 }
             }
@@ -196,10 +216,10 @@ struct DiffRow: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
-        .background(isHovered ? AppColors.surface.opacity(0.5) : Color.clear)
+        .background(isHovered ? t.surface.opacity(0.5) : Color.clear)
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(isHovered ? AppColors.border : Color.clear, lineWidth: 0.6)
+                .stroke(isHovered ? t.glassBorder : Color.clear, lineWidth: 0.6)
         )
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .contentShape(Rectangle())
@@ -207,10 +227,10 @@ struct DiffRow: View {
 
     private var statusColor: Color {
         switch diff.status {
-        case .added:     return AppColors.green
-        case .removed:   return AppColors.red
-        case .modified:  return AppColors.amber
-        case .unchanged: return AppColors.muted
+        case .added:     return t.green
+        case .removed:   return t.red
+        case .modified:  return t.amber
+        case .unchanged: return t.muted
         }
     }
 }

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SearchView: View {
     @StateObject private var browser = HistoryBrowser.shared
+    @Environment(\.colorScheme) var scheme
     @State private var query = ""
     @State private var results: [FileEvent] = []
     @State private var isSearching = false
@@ -10,84 +11,95 @@ struct SearchView: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
+        let t = Theme(isDark: scheme == .dark)
         VStack(spacing: 0) {
-            topBar
-            searchBar
-            listSection
+            topBar(t: t)
+            searchBar(t: t)
+            listSection(t: t)
         }
     }
 
-    private var topBar: some View {
+    private func topBar(t: Theme) -> some View {
         HStack {
             Text("Search History")
-                .font(AppFont.bodyM)
-                .foregroundColor(AppColors.text)
+                .font(F.bodyM)
+                .foregroundColor(t.text)
             Spacer()
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
     }
 
-    private var searchBar: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 10) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(AppColors.muted)
+    private func searchBar(t: Theme) -> some View {
+        Glass(radius: 12) {
+            VStack(spacing: 12) {
+                HStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(t.muted)
 
-                TextField("Search file name...", text: $query)
-                    .font(AppFont.bodyS)
-                    .foregroundColor(AppColors.text)
-                    .textFieldStyle(.plain)
-                    .focused($isFocused)
-                    .onSubmit { performSearch() }
-                    .onChange(of: query) { _, new in
-                        if new.isEmpty { results = [] }
-                    }
+                    TextField("Search file name...", text: $query)
+                        .font(F.bodyS)
+                        .foregroundColor(t.text)
+                        .textFieldStyle(.plain)
+                        .focused($isFocused)
+                        .onSubmit { performSearch() }
+                        .onChange(of: query) { _, new in
+                            if new.isEmpty { results = [] }
+                        }
 
-                if !query.isEmpty {
-                    Button(action: { query = "" }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(AppColors.muted)
+                    if !query.isEmpty {
+                        Button(action: { query = "" }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 14))
+                                .foregroundColor(t.muted)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+
+                HStack {
+                    Toggle("Include deleted files", isOn: $includeRemoved)
+                        .toggleStyle(.switch)
+                        .font(F.time)
+                        .foregroundColor(t.muted)
+                    Spacer()
+                    GlassButton(title: "Search", icon: "magnifyingglass") { performSearch() }
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(AppColors.card)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColors.border, lineWidth: 0.8))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-
-            HStack {
-                Toggle("Include deleted files", isOn: $includeRemoved)
-                    .toggleStyle(.switch)
-                    .font(AppFont.time)
-                    .foregroundColor(AppColors.muted)
-                Spacer()
-                ChronosButton(title: "Search", icon: "magnifyingglass") { performSearch() }
-            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 14)
+        .padding(.vertical, 8)
     }
 
-    private var listSection: some View {
+    private func listSection(t: Theme) -> some View {
         ScrollView {
-            LazyVStack(spacing: 2) {
+            LazyVStack(spacing: 3) {
                 if isSearching {
-                    ProgressView().padding(40)
+                    ForEach(0..<4, id: \.self) { i in
+                        HStack {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(t.dim.opacity(0.3))
+                                .frame(height: 36)
+                        }
+                        .padding(.horizontal, 12)
+                        .shimmer()
+                        .reveal(delay: Double(i) * 0.05)
+                    }
                 } else if query.isEmpty {
-                    emptyState("Type a file name to search history.")
+                    emptyState("Type a file name to search history.", t: t)
                 } else if results.isEmpty {
-                    emptyState("No results found.")
+                    emptyState("No results found.", t: t)
                 } else {
                     ForEach(results.indices, id: \.self) { i in
                         let event = results[i]
-                        SearchRow(event: event, isHovered: hoverItem == event.path)
+                        SearchRow(event: event, isHovered: hoverItem == event.path, t: t)
                             .onHover { hovering in
-                                withAnimation(Smooth.fast) {
+                                withAnimation(A.fast) {
                                     hoverItem = hovering ? event.path : nil
                                 }
                             }
@@ -100,17 +112,18 @@ struct SearchView: View {
         }
     }
 
-    private func emptyState(_ msg: String) -> some View {
+    private func emptyState(_ msg: String, t: Theme) -> some View {
         VStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 32))
-                .foregroundColor(AppColors.muted.opacity(0.15))
+                .foregroundColor(t.muted.opacity(0.15))
             Text(msg)
-                .font(AppFont.bodyS)
-                .foregroundColor(AppColors.muted)
+                .font(F.bodyS)
+                .foregroundColor(t.muted)
         }
         .frame(maxWidth: .infinity, minHeight: 200)
         .padding()
+        .reveal(delay: 0.1)
     }
 
     private func performSearch() {
@@ -126,6 +139,7 @@ struct SearchView: View {
 struct SearchRow: View {
     let event: FileEvent
     let isHovered: Bool
+    let t: Theme
 
     var body: some View {
         HStack(spacing: 12) {
@@ -133,30 +147,30 @@ struct SearchRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(event.name)
-                    .font(AppFont.bodyS)
-                    .foregroundColor(AppColors.text)
+                    .font(F.bodyS)
+                    .foregroundColor(t.text)
                     .lineLimit(1)
 
                 HStack(spacing: 6) {
                     EventBadge(text: event.eventType.description, color: eventColor)
                     Text(shortPath(event.parentPath))
-                        .font(AppFont.time)
-                        .foregroundColor(AppColors.muted)
+                        .font(F.time)
+                        .foregroundColor(t.muted)
                 }
             }
 
             Spacer()
 
             Text(event.timestamp, style: .date)
-                .font(AppFont.time)
-                .foregroundColor(AppColors.muted)
+                .font(F.time)
+                .foregroundColor(t.muted)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
-        .background(isHovered ? AppColors.surface.opacity(0.5) : Color.clear)
+        .background(isHovered ? t.surface.opacity(0.5) : Color.clear)
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(isHovered ? AppColors.border : Color.clear, lineWidth: 0.6)
+                .stroke(isHovered ? t.glassBorder : Color.clear, lineWidth: 0.6)
         )
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .contentShape(Rectangle())
@@ -164,10 +178,10 @@ struct SearchRow: View {
 
     private var eventColor: Color {
         switch event.eventType {
-        case .created:  return AppColors.green
-        case .modified: return AppColors.accent
-        case .renamed:  return AppColors.amber
-        case .removed:  return AppColors.red
+        case .created:  return t.green
+        case .modified: return t.accent
+        case .renamed:  return t.amber
+        case .removed:  return t.red
         }
     }
 

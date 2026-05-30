@@ -71,35 +71,37 @@ struct ContentView: View {
 struct Sidebar: View {
     @Binding var selectedTab: SidebarTab
     @Environment(\.openSettings) private var openSettings
+    @Environment(\.colorScheme) var scheme
 
     var body: some View {
+        let t = Theme(isDark: scheme == .dark)
         VStack(spacing: 0) {
             HStack(spacing: 10) {
                 ZStack {
                     Circle()
-                        .fill(AppColors.accent.opacity(0.12))
+                        .fill(t.accent.opacity(0.12))
                         .frame(width: 32, height: 32)
                     Image(systemName: "clock.arrow.circlepath")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(AppColors.accent)
+                        .foregroundColor(t.accent)
                 }
                 Text("Chronos")
                     .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(AppColors.text)
+                    .foregroundColor(t.text)
                 Spacer()
             }
             .padding(.horizontal, 16)
             .padding(.top, 20)
             .padding(.bottom, 24)
 
-            VStack(spacing: 2) {
+            VStack(spacing: 3) {
                 ForEach(SidebarTab.allCases, id: \.self) { tab in
                     SidebarRow(
                         icon: tab.icon,
                         label: tab.rawValue,
                         isSelected: selectedTab == tab
                     ) {
-                        withAnimation(Smooth.fast) {
+                        withAnimation(A.fast) {
                             selectedTab = tab
                         }
                     }
@@ -119,29 +121,31 @@ struct Sidebar: View {
 }
 
 struct SidebarRow: View {
+    @Environment(\.colorScheme) var scheme
     let icon: String
     let label: String
     let isSelected: Bool
     let action: () -> Void
 
     var body: some View {
+        let t = Theme(isDark: scheme == .dark)
         Button(action: action) {
             HStack(spacing: 10) {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(isSelected ? AppColors.accent : AppColors.muted)
+                    .foregroundColor(isSelected ? t.accent : t.muted)
                     .frame(width: 22)
                 Text(label)
                     .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
-                    .foregroundColor(isSelected ? AppColors.text : AppColors.muted)
+                    .foregroundColor(isSelected ? t.text : t.muted)
                 Spacer()
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
-            .background(isSelected ? AppColors.accentDim : Color.clear)
+            .background(isSelected ? t.accentDim : Color.clear)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(isSelected ? AppColors.accent.opacity(0.2) : Color.clear, lineWidth: 0.8)
+                    .stroke(isSelected ? t.accent.opacity(0.2) : Color.clear, lineWidth: 0.8)
             )
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
