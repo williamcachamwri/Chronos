@@ -31,49 +31,48 @@ struct SearchView: View {
     }
 
     private func searchBar(t: Theme) -> some View {
-        Glass(radius: 12) {
-            VStack(spacing: 12) {
-                HStack(spacing: 10) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(t.muted)
+        VStack(spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(t.muted)
 
-                    TextField("Search file name...", text: $query)
-                        .font(F.bodyS)
-                        .foregroundColor(t.text)
-                        .textFieldStyle(.plain)
-                        .focused($isFocused)
-                        .onSubmit { performSearch() }
-                        .onChange(of: query) { _, new in
-                            if new.isEmpty { results = [] }
-                        }
-
-                    if !query.isEmpty {
-                        Button(action: { query = "" }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 14))
-                                .foregroundColor(t.muted)
-                        }
-                        .buttonStyle(.plain)
+                TextField("Search file name...", text: $query)
+                    .font(F.bodyS)
+                    .foregroundColor(t.text)
+                    .textFieldStyle(.plain)
+                    .focused($isFocused)
+                    .onSubmit { performSearch() }
+                    .onChange(of: query) { _, new in
+                        if new.isEmpty { results = [] }
                     }
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
 
-                HStack {
-                    Toggle("Include deleted files", isOn: $includeRemoved)
-                        .toggleStyle(.switch)
-                        .font(F.time)
-                        .foregroundColor(t.muted)
-                    Spacer()
-                    GlassButton(title: "Search", icon: "magnifyingglass") { performSearch() }
+                if !query.isEmpty {
+                    Button(action: { query = "" }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(t.muted)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(t.card)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(t.glassBorder, lineWidth: 0.8))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            HStack {
+                Toggle("Include deleted files", isOn: $includeRemoved)
+                    .toggleStyle(.switch)
+                    .font(F.time)
+                    .foregroundColor(t.muted)
+                Spacer()
+                GlassButton(title: "Search", icon: "magnifyingglass") { performSearch() }
+            }
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 8)
+        .padding(.vertical, 14)
     }
 
     private func listSection(t: Theme) -> some View {

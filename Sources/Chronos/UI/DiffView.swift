@@ -48,28 +48,29 @@ struct DiffView: View {
     }
 
     private func controls(t: Theme) -> some View {
-        Glass(radius: 12) {
-            VStack(spacing: 16) {
-                HStack(spacing: 16) {
-                    datePicker(label: "From", fraction: $fromFraction, range: browser.timeRange, t: t)
-                    datePicker(label: "To",   fraction: $toFraction,   range: browser.timeRange, t: t)
-                }
-
-                HStack(spacing: 8) {
-                    GlassButton(title: "Compare", icon: "arrow.left.arrow.right") { runDiff() }
-                    Spacer()
-                    Picker("", selection: $filter) {
-                        ForEach(DiffFilter.allCases, id: \.self) { f in
-                            Text(f.rawValue).tag(f)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 220)
-                }
+        VStack(spacing: 16) {
+            HStack(spacing: 16) {
+                datePicker(label: "From", fraction: $fromFraction, range: browser.timeRange, t: t)
+                datePicker(label: "To",   fraction: $toFraction,   range: browser.timeRange, t: t)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+
+            HStack(spacing: 8) {
+                GlassButton(title: "Compare", icon: "arrow.left.arrow.right") { runDiff() }
+                Spacer()
+                Picker("", selection: $filter) {
+                    ForEach(DiffFilter.allCases, id: \.self) { f in
+                        Text(f.rawValue).tag(f)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 220)
+            }
         }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(t.card)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(t.glassBorder, lineWidth: 0.8))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
         .padding(.horizontal, 20)
         .padding(.vertical, 8)
     }

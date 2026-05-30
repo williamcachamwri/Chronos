@@ -15,15 +15,12 @@ struct ChronosApp: App {
                         .frame(minWidth: 640, minHeight: 540)
                 }
             }
+            .preferredColorScheme(.light)
         }
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: hasCompletedOnboarding ? 1100 : 640, height: hasCompletedOnboarding ? 700 : 580)
         .commands {
             CommandGroup(replacing: .newItem) {}
-        }
-
-        Settings {
-            SettingsView()
         }
     }
 }
@@ -46,13 +43,14 @@ enum SidebarTab: String, CaseIterable {
 
 struct ContentView: View {
     @State private var selectedTab: SidebarTab = .timeline
+    @State private var showSettings = false
 
     var body: some View {
         ZStack {
             ChronosBackground()
 
             NavigationSplitView {
-                Sidebar(selectedTab: $selectedTab)
+                Sidebar(selectedTab: $selectedTab, showSettings: $showSettings)
                     .frame(minWidth: 200, idealWidth: 220)
             } detail: {
                 ZStack {
@@ -64,13 +62,22 @@ struct ContentView: View {
                     }
                 }
             }
+
+            // Settings Modal Overlay
+            if showSettings {
+                SettingsModal(showSettings: $showSettings)
+                    .transition(.asymmetric(
+                        insertion: .opacity.combined(with: .scale(scale: 0.95)).animation(A.spring),
+                        removal: .opacity.animation(A.fast)
+                    ))
+            }
         }
     }
 }
 
 struct Sidebar: View {
     @Binding var selectedTab: SidebarTab
-    @Environment(\.openSettings) private var openSettings
+    @Binding var showSettings: Bool
     @Environment(\.colorScheme) var scheme
 
     var body: some View {
@@ -112,7 +119,9 @@ struct Sidebar: View {
             Spacer()
 
             SidebarRow(icon: "gear", label: "Settings", isSelected: false) {
-                openSettings()
+                withAnimation(A.spring) {
+                    showSettings = true
+                }
             }
             .padding(.horizontal, 10)
             .padding(.bottom, 16)

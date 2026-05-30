@@ -6,7 +6,7 @@ import SwiftUI
 final class HistoryBrowser: ObservableObject {
     static let shared = HistoryBrowser()
 
-    @Published var currentFolder: String = NSHomeDirectory()
+    @Published var currentFolder: String = NSHomeDirectory() + "/Desktop"
     @Published var snapshotDate: Date = Date()
     @Published var items: [FileSnapshot] = []
     @Published var isLoading = false

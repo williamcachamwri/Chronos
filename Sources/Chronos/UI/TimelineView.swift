@@ -6,7 +6,6 @@ struct TimelineView: View {
     @State private var dateFraction: Double = 1.0
     @State private var isDragging = false
     @State private var hoverItem: String?
-    @State private var showLoader = false
 
     var body: some View {
         let t = Theme(isDark: scheme == .dark)
@@ -83,64 +82,65 @@ struct TimelineView: View {
     }
 
     private func scrubberSection(t: Theme) -> some View {
-        Glass(radius: 12) {
-            VStack(spacing: 8) {
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(t.dim.opacity(0.4))
-                            .frame(height: 6)
+        VStack(spacing: 8) {
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(t.dim.opacity(0.4))
+                        .frame(height: 6)
 
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(
-                                LinearGradient(
-                                    colors: [t.accent.opacity(0.5), t.accent],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(
+                            LinearGradient(
+                                colors: [t.accent.opacity(0.5), t.accent],
+                                startPoint: .leading,
+                                endPoint: .trailing
                             )
-                            .frame(width: max(0, geo.size.width * dateFraction), height: 6)
+                        )
+                        .frame(width: max(0, geo.size.width * dateFraction), height: 6)
 
-                        if let range = browser.timeRange {
-                            tickMarks(width: geo.size.width, range: range, t: t)
-                        }
-
-                        Circle()
-                            .fill(t.accent)
-                            .frame(width: isDragging ? 16 : 12, height: isDragging ? 16 : 12)
-                            .shadow(color: t.accentGlow, radius: isDragging ? 10 : 5)
-                            .offset(x: geo.size.width * dateFraction - (isDragging ? 8 : 6))
-                            .animation(A.fast, value: isDragging)
-                    }
-                    .contentShape(Rectangle())
-                    .gesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { value in
-                                isDragging = true
-                                dateFraction = max(0, min(1, value.location.x / geo.size.width))
-                            }
-                            .onEnded { _ in
-                                withAnimation(A.fast) { isDragging = false }
-                            }
-                    )
-                }
-                .frame(height: 24)
-
-                HStack {
                     if let range = browser.timeRange {
-                        Text(range.earliest, style: .date)
-                            .font(F.time)
-                            .foregroundColor(t.muted.opacity(0.5))
-                        Spacer()
-                        Text(range.latest, style: .date)
-                            .font(F.time)
-                            .foregroundColor(t.muted.opacity(0.5))
+                        tickMarks(width: geo.size.width, range: range, t: t)
                     }
+
+                    Circle()
+                        .fill(t.accent)
+                        .frame(width: isDragging ? 16 : 12, height: isDragging ? 16 : 12)
+                        .shadow(color: t.accentGlow, radius: isDragging ? 10 : 5)
+                        .offset(x: geo.size.width * dateFraction - (isDragging ? 8 : 6))
+                        .animation(A.fast, value: isDragging)
+                }
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            isDragging = true
+                            dateFraction = max(0, min(1, value.location.x / geo.size.width))
+                        }
+                        .onEnded { _ in
+                            withAnimation(A.fast) { isDragging = false }
+                        }
+                )
+            }
+            .frame(height: 24)
+
+            HStack {
+                if let range = browser.timeRange {
+                    Text(range.earliest, style: .date)
+                        .font(F.time)
+                        .foregroundColor(t.muted.opacity(0.5))
+                    Spacer()
+                    Text(range.latest, style: .date)
+                        .font(F.time)
+                        .foregroundColor(t.muted.opacity(0.5))
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
         }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(t.card)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(t.glassBorder, lineWidth: 0.8))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
         .padding(.horizontal, 20)
         .padding(.vertical, 8)
     }
