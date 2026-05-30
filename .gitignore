@@ -1,0 +1,6 @@
+.DS_Store
+.build
+devin.log
+*.xcodeproj
+*.xcworkspace
+DerivedData
