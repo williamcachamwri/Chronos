@@ -1,251 +1,241 @@
 import SwiftUI
 
-/// The main browser view: folder contents at a selected point in time.
 struct TimelineView: View {
     @StateObject private var browser = HistoryBrowser.shared
     @State private var dateFraction: Double = 1.0
     @State private var isDragging = false
+    @State private var hoverItem: String?
 
     var body: some View {
         VStack(spacing: 0) {
-            // Toolbar
-            toolbar
-
-            Divider()
-                .background(Color.white.opacity(0.06))
-
-            // Timeline scrubber
-            timelineScrubber
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-
-            Divider()
-                .background(Color.white.opacity(0.06))
-
-            // Folder contents
-            folderList
+            topBar
+            scrubberSection
+            listSection
         }
-        .background(Color(red: 0.03, green: 0.03, blue: 0.04))
+        .background(AppColors.bg)
         .task {
             await browser.setup()
-            updateDateFraction()
+            updateFraction()
         }
-        .onChange(of: dateFraction) { _, newValue in
+        .onChange(of: dateFraction) { _, new in
             guard let range = browser.timeRange else { return }
             let total = range.latest.timeIntervalSince(range.earliest)
             guard total > 0 else { return }
-            let newDate = range.earliest.addingTimeInterval(total * newValue)
+            let newDate = range.earliest.addingTimeInterval(total * new)
             Task { await browser.setSnapshotDate(newDate) }
         }
     }
 
-    // MARK: - Toolbar
+    // MARK: - Top Bar
 
-    private var toolbar: some View {
+    private var topBar: some View {
         HStack(spacing: 12) {
-            // Back button
             Button(action: { Task { await browser.goUp() } }) {
                 Image(systemName: "chevron.up")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.primary)
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(AppColors.muted)
             }
             .buttonStyle(.plain)
             .disabled(browser.currentFolder == NSHomeDirectory())
+            .opacity(browser.currentFolder == NSHomeDirectory() ? 0.3 : 1)
 
-            // Path breadcrumb
-            Text(browser.currentFolder)
-                .font(.system(size: 12, weight: .medium, design: .monospaced))
-                .foregroundColor(.secondary)
+            Text(shortPath(browser.currentFolder))
+                .font(AppFont.mono)
+                .foregroundColor(AppColors.muted)
                 .lineLimit(1)
-                .truncationMode(.head)
 
             Spacer()
 
-            // Date display
             if let range = browser.timeRange {
-                Text(formattedDate(browser.snapshotDate, relativeTo: range))
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.blue)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(Color.blue.opacity(0.1))
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                Text(relativeDate(browser.snapshotDate, range: range))
+                    .font(AppFont.label)
+                    .foregroundColor(AppColors.accent)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(AppColors.accent.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(AppColors.accent.opacity(0.15), lineWidth: 0.5))
             }
 
-            // Live button
             Button("Now") {
-                withAnimation(.easeOut(duration: 0.3)) {
-                    dateFraction = 1.0
-                }
+                withAnimation(Smooth.spring) { dateFraction = 1.0 }
             }
             .buttonStyle(.plain)
-            .font(.system(size: 11, weight: .semibold))
-            .foregroundColor(.blue)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(Color.blue.opacity(0.1))
-            .clipShape(RoundedRectangle(cornerRadius: 4))
+            .font(AppFont.label)
+            .foregroundColor(AppColors.accent)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(AppColors.accent.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 6))
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(AppColors.bgElev)
+        .overlay(Divider().background(AppColors.border), alignment: .bottom)
     }
 
-    // MARK: - Timeline Scrubber
+    // MARK: - Scrubber
 
-    private var timelineScrubber: some View {
-        VStack(spacing: 6) {
-            // Gradient track with ticks
+    private var scrubberSection: some View {
+        VStack(spacing: 8) {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    // Track background
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(Color.white.opacity(0.06))
+                    // Track
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(AppColors.dim.opacity(0.5))
                         .frame(height: 6)
 
-                    // Filled portion
-                    RoundedRectangle(cornerRadius: 3)
+                    // Fill
+                    RoundedRectangle(cornerRadius: 4)
                         .fill(
                             LinearGradient(
-                                colors: [.blue.opacity(0.4), .blue.opacity(0.8)],
+                                colors: [AppColors.accent.opacity(0.5), AppColors.accent],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
                         .frame(width: max(0, geo.size.width * dateFraction), height: 6)
 
-                    // Ticks
+                    // Tick marks
                     if let range = browser.timeRange {
-                        tickMarks(in: geo.size.width, range: range)
+                        tickMarks(width: geo.size.width, range: range)
                     }
 
                     // Thumb
                     Circle()
-                        .fill(Color.blue)
-                        .frame(width: isDragging ? 16 : 12, height: isDragging ? 16 : 12)
-                        .shadow(color: .blue.opacity(0.5), radius: isDragging ? 6 : 4)
-                        .offset(x: geo.size.width * dateFraction - (isDragging ? 8 : 6))
+                        .fill(AppColors.accent)
+                        .frame(width: isDragging ? 18 : 14, height: isDragging ? 18 : 14)
+                        .shadow(color: AppColors.accent.opacity(0.5), radius: isDragging ? 10 : 6)
+                        .offset(x: geo.size.width * dateFraction - (isDragging ? 9 : 7))
+                        .animation(Smooth.fast, value: isDragging)
                 }
                 .contentShape(Rectangle())
                 .gesture(
                     DragGesture(minimumDistance: 0)
                         .onChanged { value in
                             isDragging = true
-                            let fraction = max(0, min(1, value.location.x / geo.size.width))
-                            dateFraction = fraction
+                            dateFraction = max(0, min(1, value.location.x / geo.size.width))
                         }
                         .onEnded { _ in
-                            isDragging = false
+                            withAnimation(Smooth.fast) { isDragging = false }
                         }
                 )
             }
-            .frame(height: 20)
+            .frame(height: 24)
 
-            // Time labels
+            // Labels
             HStack {
                 if let range = browser.timeRange {
                     Text(range.earliest, style: .date)
-                        .font(.system(size: 9))
-                        .foregroundColor(.secondary)
+                        .font(AppFont.time)
+                        .foregroundColor(AppColors.muted.opacity(0.6))
                     Spacer()
                     Text(range.latest, style: .date)
-                        .font(.system(size: 9))
-                        .foregroundColor(.secondary)
-                } else {
-                    Text("No history yet")
-                        .font(.system(size: 9))
-                        .foregroundColor(.secondary)
+                        .font(AppFont.time)
+                        .foregroundColor(AppColors.muted.opacity(0.6))
                 }
             }
         }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(AppColors.bg)
+        .overlay(Divider().background(AppColors.border), alignment: .bottom)
     }
 
-    private func tickMarks(in width: CGFloat, range: (earliest: Date, latest: Date)) -> some View {
+    private func tickMarks(width: CGFloat, range: (earliest: Date, latest: Date)) -> some View {
         let total = range.latest.timeIntervalSince(range.earliest)
         guard total > 0 else { return AnyView(EmptyView()) }
-
-        // Show ticks for each day
         let days = max(1, Int(total / 86400))
-        let step = max(1, days / 10)
+        let count = min(days, 12)
+        let step = max(1, days / count)
 
         return AnyView(
             HStack(spacing: 0) {
-                ForEach(0..<(days / step + 1), id: \.self) { i in
+                ForEach(0..<count, id: \.self) { i in
+                    let x = CGFloat(i * step) / CGFloat(days) * width
                     Rectangle()
-                        .fill(Color.white.opacity(0.08))
+                        .fill(AppColors.text.opacity(0.06))
                         .frame(width: 1, height: 6)
-                        .offset(x: width * CGFloat(i * step) / CGFloat(days) - width * CGFloat(i * step) / CGFloat(days))
-                    Spacer()
+                        .position(x: x + 0.5, y: 12)
                 }
             }
         )
     }
 
-    // MARK: - Folder List
+    // MARK: - List
 
-    private var folderList: some View {
+    private var listSection: some View {
         ScrollView {
-            LazyVStack(spacing: 0) {
+            LazyVStack(spacing: 2) {
                 if browser.items.isEmpty {
                     emptyState
                 } else {
-                    ForEach(browser.items, id: \.path) { item in
-                        SnapshotRow(item: item) {
+                    ForEach(browser.items.indices, id: \.self) { i in
+                        let item = browser.items[i]
+                        SnapshotRow(item: item, isHovered: hoverItem == item.path) {
                             if item.isDirectory {
                                 Task { await browser.navigate(to: item.path) }
                             }
                         }
+                        .onHover { hovering in
+                            withAnimation(Smooth.fast) {
+                                hoverItem = hovering ? item.path : nil
+                            }
+                        }
+                        .reveal(delay: Double(i) * 0.02)
                     }
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
         }
     }
 
     private var emptyState: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             Image(systemName: "clock.arrow.circlepath")
-                .font(.system(size: 32))
-                .foregroundColor(.secondary.opacity(0.5))
+                .font(.system(size: 40))
+                .foregroundColor(AppColors.muted.opacity(0.25))
             Text("Nothing here at this point in time")
-                .font(.system(size: 13))
-                .foregroundColor(.secondary)
+                .font(AppFont.bodyM)
+                .foregroundColor(AppColors.muted)
             if browser.timeRange == nil {
-                Text("Chronos is recording changes. Make some file operations and come back.")
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary.opacity(0.6))
+                Text("Chronos is recording changes. Make some file operations and check back.")
+                    .font(AppFont.time)
+                    .foregroundColor(AppColors.muted.opacity(0.5))
                     .multilineTextAlignment(.center)
-                    .frame(maxWidth: 280)
+                    .frame(maxWidth: 300)
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 200)
+        .frame(maxWidth: .infinity, minHeight: 300)
         .padding()
     }
 
     // MARK: - Helpers
 
-    private func updateDateFraction() {
+    private func updateFraction() {
         guard let range = browser.timeRange else { return }
         let total = range.latest.timeIntervalSince(range.earliest)
         guard total > 0 else { return }
-        let elapsed = browser.snapshotDate.timeIntervalSince(range.earliest)
-        dateFraction = max(0, min(1, elapsed / total))
+        dateFraction = max(0, min(1, browser.snapshotDate.timeIntervalSince(range.earliest) / total))
     }
 
-    private func formattedDate(_ date: Date, relativeTo range: (earliest: Date, latest: Date)) -> String {
-        let fmt = DateFormatter()
+    private func shortPath(_ path: String) -> String {
+        let home = NSHomeDirectory()
+        if path.hasPrefix(home) {
+            return "~" + path.dropFirst(home.count)
+        }
+        return path
+    }
+
+    private func relativeDate(_ date: Date, range: (earliest: Date, latest: Date)) -> String {
         let now = range.latest
         let diff = now.timeIntervalSince(date)
-
-        if diff < 60 {
-            return "Just now"
-        } else if diff < 3600 {
-            return "\(Int(diff / 60))m ago"
-        } else if diff < 86400 {
-            return "\(Int(diff / 3600))h ago"
-        } else if diff < 604800 {
-            return "\(Int(diff / 86400))d ago"
-        }
-
+        if diff < 60 { return "Just now" }
+        if diff < 3600 { return "\(Int(diff / 60))m ago" }
+        if diff < 86400 { return "\(Int(diff / 3600))h ago" }
+        if diff < 604800 { return "\(Int(diff / 86400))d ago" }
+        let fmt = DateFormatter()
         fmt.dateStyle = .short
         fmt.timeStyle = .short
         return fmt.string(from: date)
@@ -256,101 +246,57 @@ struct TimelineView: View {
 
 struct SnapshotRow: View {
     let item: FileSnapshot
+    let isHovered: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 10) {
-                // Icon
-                Image(systemName: item.isDirectory ? "folder.fill" : iconFor(name: item.name))
-                    .font(.system(size: 16))
-                    .foregroundColor(item.isDirectory ? Color.yellow.opacity(0.8) : iconColor(name: item.name))
-                    .frame(width: 24)
+            HStack(spacing: 12) {
+                FileIcon(name: item.name, isDirectory: item.isDirectory)
 
-                // Name
-                VStack(alignment: .leading, spacing: 1) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text(item.name)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.primary)
+                        .font(AppFont.bodyS)
+                        .foregroundColor(AppColors.text)
                         .lineLimit(1)
 
-                    HStack(spacing: 4) {
-                        Text(item.lastEventType.rawValue)
-                            .font(.system(size: 9, weight: .semibold))
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 1)
-                            .background(eventColor.opacity(0.12))
-                            .foregroundColor(eventColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 3))
-
+                    HStack(spacing: 6) {
+                        EventBadge(text: item.lastEventType.description, color: eventColor)
                         Text(item.lastEventTime, style: .time)
-                            .font(.system(size: 10))
-                            .foregroundColor(.secondary)
+                            .font(AppFont.time)
+                            .foregroundColor(AppColors.muted)
                     }
                 }
 
                 Spacer()
 
-                // Size
                 if !item.isDirectory {
-                    Text(byteCount(item.size))
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(.secondary)
+                    Text(byteString(item.size))
+                        .font(AppFont.time)
+                        .foregroundColor(AppColors.muted)
                 }
 
                 if item.isDirectory {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(.secondary.opacity(0.5))
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundColor(AppColors.muted.opacity(0.4))
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(isHovered ? AppColors.bgElev.opacity(0.5) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .background(Color.white.opacity(0.0))
-        .contentShape(Rectangle())
-        .onHover { hovering in
-            withAnimation(.easeOut(duration: 0.15)) {
-                // Hover state handled by SwiftUI automatically via button
-            }
-        }
     }
 
     private var eventColor: Color {
-        let c = item.lastEventType.typeColor
-        return Color(red: c.r, green: c.g, blue: c.b)
-    }
-
-    private func iconFor(name: String) -> String {
-        let ext = (name as NSString).pathExtension.lowercased()
-        switch ext {
-        case "jpg", "jpeg", "png", "gif", "heic", "webp": return "photo.fill"
-        case "mp4", "mov", "avi", "mkv": return "film.fill"
-        case "mp3", "aac", "wav", "flac", "m4a": return "music.note"
-        case "pdf": return "doc.fill"
-        case "txt", "md", "rtf": return "doc.text.fill"
-        case "swift", "py", "js", "ts", "go", "rs", "c", "cpp", "h": return "chevron.left.forwardslash.chevron.right"
-        case "zip", "tar", "gz", "rar", "7z": return "archivebox.fill"
-        case "dmg", "pkg", "app": return "cube.box.fill"
-        default: return "doc"
+        switch item.lastEventType {
+        case .created:  return AppColors.green
+        case .modified: return AppColors.accent
+        case .renamed:  return AppColors.amber
+        case .removed:  return AppColors.red
         }
-    }
-
-    private func iconColor(name: String) -> Color {
-        let ext = (name as NSString).pathExtension.lowercased()
-        switch ext {
-        case "jpg", "jpeg", "png", "gif", "heic", "webp": return .purple.opacity(0.8)
-        case "mp4", "mov", "avi", "mkv": return .pink.opacity(0.8)
-        case "mp3", "aac", "wav", "flac", "m4a": return .red.opacity(0.8)
-        case "pdf", "txt", "md", "rtf": return .blue.opacity(0.8)
-        case "swift", "py", "js", "ts", "go", "rs": return .green.opacity(0.8)
-        case "zip", "tar", "gz", "rar": return .orange.opacity(0.8)
-        default: return .secondary.opacity(0.7)
-        }
-    }
-
-    private func byteCount(_ bytes: Int64) -> String {
-        ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
     }
 }

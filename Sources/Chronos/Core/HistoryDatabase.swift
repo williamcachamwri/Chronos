@@ -1,8 +1,6 @@
 import Foundation
 import SQLite3
 
-/// Thread-safe SQLite database that stores every file-system event.
-/// Uses WAL mode for concurrent readers and crash safety.
 actor HistoryDatabase {
     static let shared = HistoryDatabase()
 
@@ -17,33 +15,22 @@ actor HistoryDatabase {
         self.dbPath = supportDir.appendingPathComponent("history.db").path
     }
 
-    deinit {
-        sqlite3_close(db)
-    }
-
-    /// Opens the database, creates schema, and enables WAL mode.
     func setup() throws {
         try queue.sync {
             let rc = sqlite3_open(dbPath, &db)
             guard rc == SQLITE_OK else {
-                throw DatabaseError.openFailed(String(cString: sqlite3_errmsg(db)))
+                throw DBError.openFailed(String(cString: sqlite3_errmsg(db)))
             }
-
-            // WAL mode for concurrent readers + crash safety
             try exec("PRAGMA journal_mode = WAL")
             try exec("PRAGMA synchronous = NORMAL")
-            try exec("PRAGMA mmap_size = 134217728") // 128 MB
             try exec("PRAGMA temp_store = MEMORY")
-            try exec("PRAGMA cache_size = -32768") // 32 MB
-
+            try exec("PRAGMA cache_size = -32768")
             try createSchema()
         }
     }
 
-    // MARK: - Schema
-
     private func createSchema() throws {
-        let ddl = """
+        try exec("""
         CREATE TABLE IF NOT EXISTS events (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             path        TEXT NOT NULL,
@@ -55,24 +42,20 @@ actor HistoryDatabase {
             is_dir      INTEGER NOT NULL DEFAULT 0,
             inode       INTEGER NOT NULL DEFAULT 0
         );
-
-        CREATE INDEX IF NOT EXISTS idx_path       ON events(path);
-        CREATE INDEX IF NOT EXISTS idx_parent     ON events(parent_path);
-        CREATE INDEX IF NOT EXISTS idx_timestamp  ON events(timestamp);
-        CREATE INDEX IF NOT EXISTS idx_inode      ON events(inode);
-        CREATE INDEX IF NOT EXISTS idx_name       ON events(name COLLATE NOCASE);
-        CREATE INDEX IF NOT EXISTS idx_type_time  ON events(event_type, timestamp);
+        CREATE INDEX IF NOT EXISTS idx_path      ON events(path);
+        CREATE INDEX IF NOT EXISTS idx_parent    ON events(parent_path);
+        CREATE INDEX IF NOT EXISTS idx_timestamp ON events(timestamp);
+        CREATE INDEX IF NOT EXISTS idx_name      ON events(name COLLATE NOCASE);
 
         CREATE TABLE IF NOT EXISTS folders (
-            path TEXT PRIMARY KEY,
+            path    TEXT PRIMARY KEY,
             enabled INTEGER NOT NULL DEFAULT 1,
             added_at REAL NOT NULL
         );
-        """
-        try exec(ddl)
+        """)
     }
 
-    // MARK: - Inserts
+    // MARK: - Insert
 
     func insertEvent(path: String, name: String, parentPath: String,
                      eventType: EventType, timestamp: Date,
@@ -80,14 +63,10 @@ actor HistoryDatabase {
                      inode: UInt64 = 0) throws {
         let sql = """
         INSERT INTO events (path, name, parent_path, event_type, timestamp, size, is_dir, inode)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
         """
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else {
-            throw DatabaseError.prepareFailed(String(cString: sqlite3_errmsg(db)))
-        }
+        let stmt = try prepare(sql)
         defer { sqlite3_finalize(stmt) }
-
         sqlite3_bind_text(stmt, 1, (path as NSString).utf8String, -1, nil)
         sqlite3_bind_text(stmt, 2, (name as NSString).utf8String, -1, nil)
         sqlite3_bind_text(stmt, 3, (parentPath as NSString).utf8String, -1, nil)
@@ -96,44 +75,196 @@ actor HistoryDatabase {
         sqlite3_bind_int64(stmt, 6, size)
         sqlite3_bind_int(stmt, 7, isDirectory ? 1 : 0)
         sqlite3_bind_int64(stmt, 8, Int64(inode))
-
         guard sqlite3_step(stmt) == SQLITE_DONE else {
-            throw DatabaseError.insertFailed(String(cString: sqlite3_errmsg(db)))
+            throw DBError.insertFailed(String(cString: sqlite3_errmsg(db)))
         }
     }
 
-    // MARK: - Queries
+    // MARK: - Snapshot
 
-    /// Returns the state of a folder at a specific point in time.
-    /// For each path, we take the most recent event before `at`.
+    /// Returns files that existed in `folderPath` at time `date`.
+    /// Logic: for each path, get the latest event at or before `date`;
+    /// include it only if that event is not 'removed'.
     func snapshot(ofFolder folderPath: String, at date: Date) throws -> [FileSnapshot] {
         let sql = """
-        SELECT path, name, parent_path, event_type, timestamp, size, is_dir, inode
-        FROM events e1
-        WHERE parent_path = ?
-          AND timestamp <= ?
-          AND id = (
-              SELECT id FROM events e2
-              WHERE e2.path = e1.path
-                AND e2.timestamp <= ?
-              ORDER BY e2.timestamp DESC, e2.id DESC
-              LIMIT 1
-          )
-          AND event_type != 'removed'
-        ORDER BY name COLLATE NOCASE
+        SELECT e.path, e.name, e.parent_path, e.event_type, e.timestamp, e.size, e.is_dir, e.inode
+        FROM events e
+        INNER JOIN (
+            SELECT path, MAX(timestamp) AS max_ts
+            FROM events
+            WHERE parent_path = ?1 AND timestamp <= ?2
+            GROUP BY path
+        ) latest ON e.path = latest.path AND e.timestamp = latest.max_ts
+        WHERE e.parent_path = ?1 AND e.event_type != 'removed'
+        ORDER BY e.name COLLATE NOCASE
         """
+        let stmt = try prepare(sql)
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_text(stmt, 1, (folderPath as NSString).utf8String, -1, nil)
+        sqlite3_bind_double(stmt, 2, date.timeIntervalSince1970)
+        return try decodeSnapshots(stmt: stmt)
+    }
 
+    // MARK: - Diff
+
+    /// Compare folder state at two timestamps. Returns added, removed, modified, unchanged.
+    func diff(folderPath: String, from: Date, to: Date) throws -> [FileDiff] {
+        let old = try snapshot(ofFolder: folderPath, at: from)
+        let new = try snapshot(ofFolder: folderPath, at: to)
+        var diffs: [FileDiff] = []
+        let oldMap = Dictionary(uniqueKeysWithValues: old.map { ($0.path, $0) })
+        let newMap = Dictionary(uniqueKeysWithValues: new.map { ($0.path, $0) })
+
+        for (path, n) in newMap {
+            if let o = oldMap[path] {
+                if o.size != n.size || o.name != n.name {
+                    diffs.append(FileDiff(path: path, name: n.name, status: .modified,
+                                          oldSize: o.size, newSize: n.size, isDirectory: n.isDirectory))
+                } else {
+                    diffs.append(FileDiff(path: path, name: n.name, status: .unchanged,
+                                          oldSize: o.size, newSize: n.size, isDirectory: n.isDirectory))
+                }
+            } else {
+                diffs.append(FileDiff(path: path, name: n.name, status: .added,
+                                      oldSize: 0, newSize: n.size, isDirectory: n.isDirectory))
+            }
+        }
+        for (path, o) in oldMap where newMap[path] == nil {
+            diffs.append(FileDiff(path: path, name: o.name, status: .removed,
+                                  oldSize: o.size, newSize: 0, isDirectory: o.isDirectory))
+        }
+        return diffs.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    // MARK: - Search
+
+    /// Search events by name (case-insensitive). Can optionally filter by deleted files only.
+    func search(query: String, includeRemoved: Bool = true, limit: Int = 100) throws -> [FileEvent] {
+        let pattern = "%\(query)%"
+        let sql: String
+        if includeRemoved {
+            sql = """
+            SELECT id, path, name, parent_path, event_type, timestamp, size, is_dir, inode
+            FROM events
+            WHERE name LIKE ?1
+            ORDER BY timestamp DESC
+            LIMIT ?2
+            """
+        } else {
+            sql = """
+            SELECT e.id, e.path, e.name, e.parent_path, e.event_type, e.timestamp, e.size, e.is_dir, e.inode
+            FROM events e
+            INNER JOIN (
+                SELECT path, MAX(timestamp) AS max_ts
+                FROM events
+                WHERE name LIKE ?1
+                GROUP BY path
+            ) latest ON e.path = latest.path AND e.timestamp = latest.max_ts
+            WHERE e.name LIKE ?1 AND e.event_type != 'removed'
+            ORDER BY e.timestamp DESC
+            LIMIT ?2
+            """
+        }
+        let stmt = try prepare(sql)
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_text(stmt, 1, (pattern as NSString).utf8String, -1, nil)
+        sqlite3_bind_int(stmt, 2, Int32(limit))
+        return try decodeEvents(stmt: stmt)
+    }
+
+    // MARK: - Recent
+
+    func recentEvents(since: Date, limit: Int = 200) throws -> [FileEvent] {
+        let sql = """
+        SELECT id, path, name, parent_path, event_type, timestamp, size, is_dir, inode
+        FROM events
+        WHERE timestamp >= ?1
+        ORDER BY timestamp DESC, id DESC
+        LIMIT ?2
+        """
+        let stmt = try prepare(sql)
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_double(stmt, 1, since.timeIntervalSince1970)
+        sqlite3_bind_int(stmt, 2, Int32(limit))
+        return try decodeEvents(stmt: stmt)
+    }
+
+    func history(forPath path: String, limit: Int = 50) throws -> [FileEvent] {
+        let sql = """
+        SELECT id, path, name, parent_path, event_type, timestamp, size, is_dir, inode
+        FROM events
+        WHERE path = ?1
+        ORDER BY timestamp DESC, id DESC
+        LIMIT ?2
+        """
+        let stmt = try prepare(sql)
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_text(stmt, 1, (path as NSString).utf8String, -1, nil)
+        sqlite3_bind_int(stmt, 2, Int32(limit))
+        return try decodeEvents(stmt: stmt)
+    }
+
+    // MARK: - Time range
+
+    func timeRange() throws -> (earliest: Date, latest: Date)? {
+        let sql = "SELECT MIN(timestamp), MAX(timestamp) FROM events"
+        let stmt = try prepare(sql)
+        defer { sqlite3_finalize(stmt) }
+        guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
+        let minTs = sqlite3_column_double(stmt, 0)
+        let maxTs = sqlite3_column_double(stmt, 1)
+        guard minTs > 0 else { return nil }
+        return (Date(timeIntervalSince1970: minTs), Date(timeIntervalSince1970: maxTs))
+    }
+
+    // MARK: - Folders
+
+    func addWatchedFolder(_ path: String) throws {
+        let sql = "INSERT OR REPLACE INTO folders (path, enabled, added_at) VALUES (?1, 1, ?2)"
+        let stmt = try prepare(sql)
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_text(stmt, 1, (path as NSString).utf8String, -1, nil)
+        sqlite3_bind_double(stmt, 2, Date().timeIntervalSince1970)
+        sqlite3_step(stmt)
+    }
+
+    func watchedFolders() throws -> [String] {
+        let sql = "SELECT path FROM folders WHERE enabled = 1 ORDER BY added_at DESC"
+        let stmt = try prepare(sql)
+        defer { sqlite3_finalize(stmt) }
+        var paths: [String] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            paths.append(String(cString: sqlite3_column_text(stmt, 0)))
+        }
+        return paths
+    }
+
+    func removeWatchedFolder(_ path: String) throws {
+        let sql = "DELETE FROM folders WHERE path = ?1"
+        let stmt = try prepare(sql)
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_text(stmt, 1, (path as NSString).utf8String, -1, nil)
+        sqlite3_step(stmt)
+    }
+
+    // MARK: - Helpers
+
+    private func exec(_ sql: String) throws {
+        guard sqlite3_exec(db, sql, nil, nil, nil) == SQLITE_OK else {
+            throw DBError.execFailed(String(cString: sqlite3_errmsg(db)))
+        }
+    }
+
+    private func prepare(_ sql: String) throws -> OpaquePointer? {
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else {
-            throw DatabaseError.prepareFailed(String(cString: sqlite3_errmsg(db)))
+            throw DBError.prepareFailed(String(cString: sqlite3_errmsg(db)))
         }
-        defer { sqlite3_finalize(stmt) }
+        return stmt
+    }
 
-        let ts = date.timeIntervalSince1970
-        sqlite3_bind_text(stmt, 1, (folderPath as NSString).utf8String, -1, nil)
-        sqlite3_bind_double(stmt, 2, ts)
-        sqlite3_bind_double(stmt, 3, ts)
-
+    private func decodeSnapshots(stmt: OpaquePointer?) throws -> [FileSnapshot] {
+        guard let stmt else { return [] }
         var results: [FileSnapshot] = []
         while sqlite3_step(stmt) == SQLITE_ROW {
             results.append(FileSnapshot(
@@ -150,94 +281,8 @@ actor HistoryDatabase {
         return results
     }
 
-    /// Returns all events for a given path, newest first.
-    func history(forPath path: String, limit: Int = 100) throws -> [FileEvent] {
-        let sql = """
-        SELECT id, path, name, parent_path, event_type, timestamp, size, is_dir, inode
-        FROM events
-        WHERE path = ?
-        ORDER BY timestamp DESC, id DESC
-        LIMIT ?
-        """
-        return try fetchEvents(sql: sql, bindings: { stmt in
-            sqlite3_bind_text(stmt, 1, (path as NSString).utf8String, -1, nil)
-            sqlite3_bind_int(stmt, 2, Int32(limit))
-        })
-    }
-
-    /// Returns recent events across all watched folders.
-    func recentEvents(since: Date, limit: Int = 200) throws -> [FileEvent] {
-        let sql = """
-        SELECT id, path, name, parent_path, event_type, timestamp, size, is_dir, inode
-        FROM events
-        WHERE timestamp >= ?
-        ORDER BY timestamp DESC, id DESC
-        LIMIT ?
-        """
-        return try fetchEvents(sql: sql, bindings: { stmt in
-            sqlite3_bind_double(stmt, 1, since.timeIntervalSince1970)
-            sqlite3_bind_int(stmt, 2, Int32(limit))
-        })
-    }
-
-    /// Returns the earliest and latest timestamp in the database.
-    func timeRange() throws -> (earliest: Date, latest: Date)? {
-        let sql = "SELECT MIN(timestamp), MAX(timestamp) FROM events"
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return nil }
-        defer { sqlite3_finalize(stmt) }
-
-        guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
-        let minTs = sqlite3_column_double(stmt, 0)
-        let maxTs = sqlite3_column_double(stmt, 1)
-        guard minTs > 0 else { return nil }
-        return (Date(timeIntervalSince1970: minTs), Date(timeIntervalSince1970: maxTs))
-    }
-
-    // MARK: - Folders
-
-    func addWatchedFolder(_ path: String) throws {
-        let sql = "INSERT OR REPLACE INTO folders (path, enabled, added_at) VALUES (?, 1, ?)"
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return }
-        defer { sqlite3_finalize(stmt) }
-        sqlite3_bind_text(stmt, 1, (path as NSString).utf8String, -1, nil)
-        sqlite3_bind_double(stmt, 2, Date().timeIntervalSince1970)
-        sqlite3_step(stmt)
-    }
-
-    func watchedFolders() throws -> [String] {
-        let sql = "SELECT path FROM folders WHERE enabled = 1 ORDER BY added_at DESC"
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
-        defer { sqlite3_finalize(stmt) }
-        var paths: [String] = []
-        while sqlite3_step(stmt) == SQLITE_ROW {
-            paths.append(String(cString: sqlite3_column_text(stmt, 0)))
-        }
-        return paths
-    }
-
-    func removeWatchedFolder(_ path: String) throws {
-        try exec("DELETE FROM folders WHERE path = '\(path)'")
-    }
-
-    // MARK: - Helpers
-
-    private func exec(_ sql: String) throws {
-        guard sqlite3_exec(db, sql, nil, nil, nil) == SQLITE_OK else {
-            throw DatabaseError.execFailed(String(cString: sqlite3_errmsg(db)))
-        }
-    }
-
-    private func fetchEvents(sql: String, bindings: (OpaquePointer?) -> Void) throws -> [FileEvent] {
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else {
-            throw DatabaseError.prepareFailed(String(cString: sqlite3_errmsg(db)))
-        }
-        defer { sqlite3_finalize(stmt) }
-        bindings(stmt)
-
+    private func decodeEvents(stmt: OpaquePointer?) throws -> [FileEvent] {
+        guard let stmt else { return [] }
         var results: [FileEvent] = []
         while sqlite3_step(stmt) == SQLITE_ROW {
             results.append(FileEvent(
@@ -256,18 +301,7 @@ actor HistoryDatabase {
     }
 }
 
-struct FileSnapshot: Sendable {
-    let path: String
-    let name: String
-    let parentPath: String
-    let lastEventType: EventType
-    let lastEventTime: Date
-    let size: Int64
-    let isDirectory: Bool
-    let inode: UInt64
-}
-
-enum DatabaseError: Error {
+enum DBError: Error {
     case openFailed(String)
     case prepareFailed(String)
     case insertFailed(String)

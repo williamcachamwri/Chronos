@@ -1,12 +1,7 @@
 import Foundation
 
-/// Represents a single file-system event tracked by Chronos.
-/// Events are immutable facts — they describe what happened at a specific moment.
 enum EventType: String, Codable, Sendable {
-    case created
-    case modified
-    case renamed
-    case removed
+    case created, modified, renamed, removed
 }
 
 struct FileEvent: Identifiable, Sendable {
@@ -21,24 +16,66 @@ struct FileEvent: Identifiable, Sendable {
     let inode: UInt64
 }
 
+struct FileSnapshot: Sendable {
+    let path: String
+    let name: String
+    let parentPath: String
+    let lastEventType: EventType
+    let lastEventTime: Date
+    let size: Int64
+    let isDirectory: Bool
+    let inode: UInt64
+}
+
+enum DiffStatus: String, Sendable {
+    case added, removed, modified, unchanged
+}
+
+struct FileDiff: Sendable {
+    let path: String
+    let name: String
+    let status: DiffStatus
+    let oldSize: Int64
+    let newSize: Int64
+    let isDirectory: Bool
+}
+
 extension EventType {
-    /// Returns the human-readable description of this event type.
     var description: String {
         switch self {
-        case .created:   return "Created"
-        case .modified:  return "Modified"
-        case .renamed:   return "Renamed"
-        case .removed:   return "Removed"
+        case .created:  return "Created"
+        case .modified: return "Modified"
+        case .renamed:  return "Renamed"
+        case .removed:  return "Removed"
         }
     }
 
-    /// Returns a color associated with the event type for UI display.
-    var typeColor: (r: Double, g: Double, b: Double) {
+    var hexColor: String {
         switch self {
-        case .created:   return (0.20, 0.78, 0.35)   // green
-        case .modified:  return (0.25, 0.48, 0.90)   // blue
-        case .renamed:   return (0.95, 0.60, 0.10)   // amber
-        case .removed:   return (0.95, 0.25, 0.25)   // red
+        case .created:  return "#34d399"  // green
+        case .modified: return "#60a5fa"  // blue
+        case .renamed:  return "#f59e0b"  // amber
+        case .removed:  return "#f87171"  // red
+        }
+    }
+}
+
+extension DiffStatus {
+    var description: String {
+        switch self {
+        case .added:     return "Added"
+        case .removed:   return "Removed"
+        case .modified:  return "Modified"
+        case .unchanged: return "Unchanged"
+        }
+    }
+
+    var hexColor: String {
+        switch self {
+        case .added:     return "#34d399"
+        case .removed:   return "#f87171"
+        case .modified:  return "#f59e0b"
+        case .unchanged: return "#9ca3af"
         }
     }
 }

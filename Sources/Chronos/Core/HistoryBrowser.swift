@@ -1,9 +1,9 @@
 import Foundation
+import SwiftUI
 
-/// High-level coordinator that bridges the UI with the database.
-/// Provides folder snapshots at arbitrary points in time.
+/// High-level coordinator bridging UI and database.
 @MainActor
-final class HistoryBrowser: ObservableObject, Sendable {
+final class HistoryBrowser: ObservableObject {
     static let shared = HistoryBrowser()
 
     @Published var currentFolder: String = NSHomeDirectory()
@@ -20,13 +20,11 @@ final class HistoryBrowser: ObservableObject, Sendable {
     func setup() async {
         do {
             try await db.setup()
-            // Default watch home directory Desktop & Documents
             let home = NSHomeDirectory()
             try? await db.addWatchedFolder(home + "/Desktop")
             try? await db.addWatchedFolder(home + "/Documents")
             try? await db.addWatchedFolder(home + "/Downloads")
 
-            // Start monitoring
             let folders = (try? await db.watchedFolders()) ?? []
             await FileSystemMonitor.shared.start(watching: folders)
 
@@ -41,7 +39,6 @@ final class HistoryBrowser: ObservableObject, Sendable {
         guard !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
-
         do {
             items = try await db.snapshot(ofFolder: currentFolder, at: snapshotDate)
         } catch {
@@ -77,5 +74,17 @@ final class HistoryBrowser: ObservableObject, Sendable {
 
     func recentEvents(since: Date) async -> [FileEvent] {
         return (try? await db.recentEvents(since: since, limit: 100)) ?? []
+    }
+
+    // MARK: - Diff
+
+    func diff(folderPath: String, from: Date, to: Date) async -> [FileDiff] {
+        return (try? await db.diff(folderPath: folderPath, from: from, to: to)) ?? []
+    }
+
+    // MARK: - Search
+
+    func search(query: String, includeRemoved: Bool = true) async -> [FileEvent] {
+        return (try? await db.search(query: query, includeRemoved: includeRemoved, limit: 100)) ?? []
     }
 }

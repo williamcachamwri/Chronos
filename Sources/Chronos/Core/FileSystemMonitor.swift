@@ -1,8 +1,7 @@
 import Foundation
 import CoreServices
 
-/// Uses FSEvents to watch directories and log all file-system changes
-/// to the HistoryDatabase. Runs on a dedicated background queue.
+/// Watches directories via FSEvents and logs changes to HistoryDatabase.
 actor FileSystemMonitor {
     static let shared = FileSystemMonitor()
 
@@ -21,13 +20,11 @@ actor FileSystemMonitor {
         self.watchedPaths = paths
         self.isRunning = true
 
-        queue.async { [weak self] in
-            guard let self else { return }
+        queue.async { [self] in
             self.stream = self.createStream(paths: paths)
             guard let stream = self.stream else { return }
-            FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), CFRunLoopMode.defaultMode.rawValue)
+            FSEventStreamSetDispatchQueue(stream, self.queue)
             FSEventStreamStart(stream)
-            CFRunLoopRun()
         }
     }
 
@@ -63,16 +60,16 @@ actor FileSystemMonitor {
             release: nil,
             copyDescription: nil
         )
-
         let cfPaths = paths as CFArray
 
-        let callback: FSEventStreamCallback = { (streamRef, clientCallBackInfo, numEvents, eventPaths, eventFlags, eventIds) in
+        let callback: FSEventStreamCallback = { _, clientCallBackInfo, numEvents, eventPaths, eventFlags, _ in
             guard let info = clientCallBackInfo else { return }
             let monitor = Unmanaged<FileSystemMonitor>.fromOpaque(info).takeUnretainedValue()
             let pathsArray = Unmanaged<CFArray>.fromOpaque(eventPaths).takeUnretainedValue() as! [String]
+            let flags = Array(UnsafeBufferPointer(start: eventFlags, count: numEvents))
 
-            Task { [pathsArray] in
-                await monitor.handleEvents(paths: pathsArray, flags: eventFlags, count: numEvents)
+            Task {
+                await monitor.handleEvents(paths: pathsArray, flags: flags)
             }
         }
 
@@ -89,20 +86,16 @@ actor FileSystemMonitor {
                 kFSEventStreamCreateFlagNoDefer
             )
         )
-
         return stream
     }
 
     // MARK: - Event Handling
 
-    private func handleEvents(paths: [String], flags: UnsafePointer<FSEventStreamEventFlags>, count: Int) {
+    private func handleEvents(paths: [String], flags: [FSEventStreamEventFlags]) {
         let fm = FileManager.default
 
-        for i in 0..<count {
-            let path = paths[i]
-            let flag = flags[i]
-
-            // Skip hidden files and system paths
+        for (index, path) in paths.enumerated() {
+            let flag = flags[index]
             guard !shouldIgnore(path: path) else { continue }
 
             let eventType = eventType(from: flag)
@@ -147,7 +140,7 @@ actor FileSystemMonitor {
     private func shouldIgnore(path: String) -> Bool {
         let name = (path as NSString).lastPathComponent
         if name.hasPrefix(".") { return true }
-        let ignored = ["/private", "/dev", "/tmp", "/var", "/System", "/Library/Caches"]
-        return ignored.contains { path.hasPrefix($0) }
+        let ignored = ["/private", "/dev", "/tmp", "/var", "/System", "/Library/Caches", ".git/", ".build/"]
+        return ignored.contains { path.contains($0) }
     }
 }

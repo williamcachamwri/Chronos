@@ -5,10 +5,13 @@ struct ChronosApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .frame(minWidth: 700, minHeight: 500)
+                .frame(minWidth: 960, minHeight: 640)
         }
         .windowStyle(.hiddenTitleBar)
-        .defaultSize(width: 900, height: 600)
+        .defaultSize(width: 1100, height: 700)
+        .commands {
+            CommandGroup(replacing: .newItem) {}
+        }
 
         Settings {
             SettingsView()
@@ -16,65 +19,97 @@ struct ChronosApp: App {
     }
 }
 
-struct ContentView: View {
-    @State private var selectedTab = 0
+enum SidebarTab: String, CaseIterable {
+    case timeline = "Timeline"
+    case diff = "Diff"
+    case search = "Search"
+    case events = "Events"
 
-    var body: some View {
-        NavigationSplitView {
-            sidebar
-                .frame(minWidth: 180)
-                .background(Color(red: 0.03, green: 0.03, blue: 0.04))
-        } detail: {
-            Group {
-                switch selectedTab {
-                case 0: TimelineView()
-                case 1: EventListView()
-                default: TimelineView()
-                }
-            }
-            .background(Color(red: 0.03, green: 0.03, blue: 0.04))
+    var icon: String {
+        switch self {
+        case .timeline: return "clock.arrow.circlepath"
+        case .diff:     return "arrow.left.arrow.right"
+        case .search:   return "magnifyingglass"
+        case .events:   return "bolt.fill"
         }
-        .background(Color(red: 0.03, green: 0.03, blue: 0.04))
-    }
-
-    private var sidebar: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            // Logo
-            HStack(spacing: 8) {
-                Image(systemName: "clock.arrow.circlepath")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.blue)
-                Text("Chronos")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(.primary)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 12)
-
-            Divider()
-                .background(Color.white.opacity(0.06))
-                .padding(.horizontal, 8)
-
-            // Nav items
-            SidebarItem(icon: "clock", label: "Timeline", isSelected: selectedTab == 0) {
-                selectedTab = 0
-            }
-            SidebarItem(icon: "bolt", label: "Live Events", isSelected: selectedTab == 1) {
-                selectedTab = 1
-            }
-
-            Spacer()
-
-            // Settings link
-            SidebarItem(icon: "gear", label: "Settings", isSelected: false) {
-                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-            }
-        }
-        .padding(.vertical, 4)
     }
 }
 
-struct SidebarItem: View {
+struct ContentView: View {
+    @State private var selectedTab: SidebarTab = .timeline
+
+    var body: some View {
+        NavigationSplitView {
+            Sidebar(selectedTab: $selectedTab)
+                .frame(minWidth: 200, idealWidth: 220)
+        } detail: {
+            ZStack {
+                AppColors.bg.ignoresSafeArea()
+                switch selectedTab {
+                case .timeline: TimelineView()
+                case .diff:     DiffView()
+                case .search:   SearchView()
+                case .events:   EventListView()
+                }
+            }
+        }
+    }
+}
+
+struct Sidebar: View {
+    @Binding var selectedTab: SidebarTab
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack(spacing: 10) {
+                ZStack {
+                    Circle()
+                        .fill(AppColors.accent.opacity(0.15))
+                        .frame(width: 32, height: 32)
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(AppColors.accent)
+                }
+                Text("Chronos")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(AppColors.text)
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 20)
+            .padding(.bottom, 24)
+
+            // Tabs
+            VStack(spacing: 2) {
+                ForEach(SidebarTab.allCases, id: \.self) { tab in
+                    SidebarRow(
+                        icon: tab.icon,
+                        label: tab.rawValue,
+                        isSelected: selectedTab == tab
+                    ) {
+                        withAnimation(Smooth.fast) {
+                            selectedTab = tab
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 10)
+
+            Spacer()
+
+            // Settings
+            SidebarRow(icon: "gear", label: "Settings", isSelected: false) {
+                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            }
+            .padding(.horizontal, 10)
+            .padding(.bottom, 16)
+        }
+        .background(AppColors.bgElev)
+    }
+}
+
+struct SidebarRow: View {
     let icon: String
     let label: String
     let isSelected: Bool
@@ -84,22 +119,23 @@ struct SidebarItem: View {
         Button(action: action) {
             HStack(spacing: 10) {
                 Image(systemName: icon)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(isSelected ? .blue : .secondary)
-                    .frame(width: 20)
-
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(isSelected ? AppColors.accent : AppColors.muted)
+                    .frame(width: 22)
                 Text(label)
                     .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
-                    .foregroundColor(isSelected ? .primary : .secondary)
-
+                    .foregroundColor(isSelected ? AppColors.text : AppColors.muted)
                 Spacer()
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(isSelected ? Color.blue.opacity(0.1) : Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .padding(.vertical, 7)
+            .background(isSelected ? AppColors.accent.opacity(0.08) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(isSelected ? AppColors.accent.opacity(0.15) : Color.clear, lineWidth: 1)
+            )
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 6)
     }
 }

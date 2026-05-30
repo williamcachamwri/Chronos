@@ -1,76 +1,99 @@
 import SwiftUI
+import Combine
 
-/// Shows a live stream of recent file-system events.
 struct EventListView: View {
     @StateObject private var browser = HistoryBrowser.shared
     @State private var events: [FileEvent] = []
-    @State private var timer: Timer?
+    @State private var timerCancellable: Cancellable?
 
     var body: some View {
-        ScrollView {
-            LazyVStack(spacing: 0) {
-                ForEach(events) { event in
-                    EventRow(event: event)
+        VStack(spacing: 0) {
+            HStack {
+                Text("Live Events")
+                    .font(AppFont.bodyM)
+                    .foregroundColor(AppColors.text)
+                Spacer()
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(AppColors.green)
+                        .frame(width: 6, height: 6)
+                    Text("Recording")
+                        .font(AppFont.label)
+                        .foregroundColor(AppColors.muted)
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 14)
+            .background(AppColors.bgElev)
+            .overlay(Divider().background(AppColors.border), alignment: .bottom)
+
+            ScrollView {
+                LazyVStack(spacing: 2) {
+                    ForEach(events) { event in
+                        EventRowLive(event: event)
+                            .reveal(delay: 0)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+            }
         }
-        .background(Color(red: 0.03, green: 0.03, blue: 0.04))
+        .background(AppColors.bg)
         .onAppear { startPolling() }
-        .onDisappear { timer?.invalidate() }
+        .onDisappear { timerCancellable?.cancel() }
     }
 
     private func startPolling() {
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+        let timer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
+        timerCancellable = timer.sink { _ in
             Task {
                 let newEvents = await browser.recentEvents(since: Date().addingTimeInterval(-3600))
                 await MainActor.run { events = newEvents }
             }
         }
-        timer?.fire()
     }
 }
 
-struct EventRow: View {
+struct EventRowLive: View {
     let event: FileEvent
+    @State private var isHovered = false
 
     var body: some View {
-        HStack(spacing: 10) {
-            // Event type dot
+        HStack(spacing: 12) {
             Circle()
                 .fill(eventColor)
                 .frame(width: 6, height: 6)
 
-            // Name
             Text(event.name)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(.primary)
+                .font(AppFont.bodyS)
+                .foregroundColor(AppColors.text)
                 .lineLimit(1)
 
             Spacer()
 
-            // Event type label
-            Text(event.eventType.rawValue)
-                .font(.system(size: 9, weight: .semibold))
-                .padding(.horizontal, 4)
-                .padding(.vertical, 1)
-                .background(eventColor.opacity(0.12))
-                .foregroundColor(eventColor)
-                .clipShape(RoundedRectangle(cornerRadius: 3))
+            EventBadge(text: event.eventType.description, color: eventColor)
 
-            // Time
             Text(event.timestamp, style: .time)
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
+                .font(AppFont.time)
+                .foregroundColor(AppColors.muted)
                 .frame(width: 44, alignment: .trailing)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 5)
-        .background(Color.white.opacity(0.0))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(isHovered ? AppColors.bgElev.opacity(0.5) : Color.clear)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .contentShape(Rectangle())
+        .onHover { hovering in
+            withAnimation(Smooth.fast) { isHovered = hovering }
+        }
     }
 
     private var eventColor: Color {
-        let c = event.eventType.typeColor
-        return Color(red: c.r, green: c.g, blue: c.b)
+        switch event.eventType {
+        case .created:  return AppColors.green
+        case .modified: return AppColors.accent
+        case .renamed:  return AppColors.amber
+        case .removed:  return AppColors.red
+        }
     }
 }
