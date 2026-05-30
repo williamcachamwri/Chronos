@@ -113,6 +113,7 @@ actor HistoryDatabase {
         sqlite3_bind_double(stmt, 2, date.timeIntervalSince1970)
 
         let events = try decodeEvents(stmt: stmt)
+        print("[Chronos DB] snapshot query returned \(events.count) raw events for \(folderPath)")
         var seen = Set<String>()
         var result: [FileSnapshot] = []
         for event in events {

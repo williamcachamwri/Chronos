@@ -38,6 +38,11 @@ final class HistoryBrowser: ObservableObject {
             await FileSystemMonitor.shared.start(watching: folders)
 
             await refreshTimeRange()
+            // snapshotDate was set at init time (before scan). Update to latest so the
+            // initial snapshot sees all scanned files.
+            if let range = timeRange {
+                snapshotDate = range.latest
+            }
             await loadSnapshot()
         } catch {
             errorMessage = "Database setup failed: \(error)"
