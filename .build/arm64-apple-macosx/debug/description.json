@@ -1,0 +1,797 @@
+{
+  "builtTestProducts" : [
+    {
+      "binaryPath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.xctest/Contents/MacOS/ChronosPackageTests",
+      "packagePath" : "/Users/wica/Chronos",
+      "productName" : "ChronosPackageTests"
+    }
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.Chronos-arm64-apple-macosx-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/sources",
+      "importPath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/ChronosApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/Core/FileEvent.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/Core/FileSystemMonitor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/Core/HistoryBrowser.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/Core/HistoryDatabase.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/UI/EventListView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/UI/SettingsView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/UI/TimelineView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "Chronos",
+      "moduleOutputPath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Modules/Chronos.swiftmodule",
+      "objects" : [
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/ChronosApp.swift.o",
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/FileEvent.swift.o",
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/FileSystemMonitor.swift.o",
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/HistoryBrowser.swift.o",
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/HistoryDatabase.swift.o",
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/EventListView.swift.o",
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/SettingsView.swift.o",
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/TimelineView.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j8",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "Chronos_main",
+        "-swift-version",
+        "5",
+        "-enable-experimental-feature",
+        "StrictConcurrency",
+        "-warn-concurrency",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "chronos"
+      ],
+      "outputFileMapPath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/ChronosApp.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/FileEvent.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/FileSystemMonitor.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/HistoryBrowser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/HistoryDatabase.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/EventListView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/SettingsView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/TimelineView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Modules/Chronos.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/wica/Chronos/Sources/Chronos/ChronosApp.swift",
+        "/Users/wica/Chronos/Sources/Chronos/Core/FileEvent.swift",
+        "/Users/wica/Chronos/Sources/Chronos/Core/FileSystemMonitor.swift",
+        "/Users/wica/Chronos/Sources/Chronos/Core/HistoryBrowser.swift",
+        "/Users/wica/Chronos/Sources/Chronos/Core/HistoryDatabase.swift",
+        "/Users/wica/Chronos/Sources/Chronos/UI/EventListView.swift",
+        "/Users/wica/Chronos/Sources/Chronos/UI/SettingsView.swift",
+        "/Users/wica/Chronos/Sources/Chronos/UI/TimelineView.swift"
+      ],
+      "tempsPath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.ChronosPackageTests-arm64-apple-macosx-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.build/sources",
+      "importPath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.derived/runner.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Modules/ChronosTests.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "ChronosPackageTests",
+      "moduleOutputPath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Modules/ChronosPackageTests.swiftmodule",
+      "objects" : [
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.build/runner.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j8",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.build/include/ChronosPackageTests-Swift.h",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "chronos"
+      ],
+      "outputFileMapPath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Modules/ChronosPackageTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.derived/runner.swift"
+      ],
+      "tempsPath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.ChronosTests-arm64-apple-macosx-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build/sources",
+      "importPath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Tests/ChronosTests/ChronosTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "ChronosTests",
+      "moduleOutputPath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Modules/ChronosTests.swiftmodule",
+      "objects" : [
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build/ChronosTests.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j8",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "chronos"
+      ],
+      "outputFileMapPath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build/ChronosTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Modules/ChronosTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/wica/Chronos/Tests/ChronosTests/ChronosTests.swift"
+      ],
+      "tempsPath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "Chronos" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "Chronos",
+      "-package-name",
+      "chronos",
+      "-c",
+      "/Users/wica/Chronos/Sources/Chronos/ChronosApp.swift",
+      "/Users/wica/Chronos/Sources/Chronos/Core/FileEvent.swift",
+      "/Users/wica/Chronos/Sources/Chronos/Core/FileSystemMonitor.swift",
+      "/Users/wica/Chronos/Sources/Chronos/Core/HistoryBrowser.swift",
+      "/Users/wica/Chronos/Sources/Chronos/Core/HistoryDatabase.swift",
+      "/Users/wica/Chronos/Sources/Chronos/UI/EventListView.swift",
+      "/Users/wica/Chronos/Sources/Chronos/UI/SettingsView.swift",
+      "/Users/wica/Chronos/Sources/Chronos/UI/TimelineView.swift",
+      "-I",
+      "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j8",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "Chronos_main",
+      "-swift-version",
+      "5",
+      "-enable-experimental-feature",
+      "StrictConcurrency",
+      "-warn-concurrency",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "chronos",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "ChronosPackageTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "ChronosPackageTests",
+      "-package-name",
+      "chronos",
+      "-c",
+      "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.derived/runner.swift",
+      "-I",
+      "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j8",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.build/include/ChronosPackageTests-Swift.h",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "chronos",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "ChronosTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "ChronosTests",
+      "-package-name",
+      "chronos",
+      "-c",
+      "/Users/wica/Chronos/Tests/ChronosTests/ChronosTests.swift",
+      "-I",
+      "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j8",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "chronos",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "Chronos" : [
+
+    ],
+    "ChronosPackageTests" : [
+      "ChronosTests",
+      "Chronos"
+    ],
+    "ChronosTests" : [
+      "Chronos"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+    "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.derived/runner.swift" : {
+      "inputs" : [
+
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.derived/runner.swift"
+        }
+      ]
+    }
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos-entitlement.plist" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<entitlement-plist>"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<com.apple.security.get-task-allow>"
+        }
+      ],
+      "outputFilePath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos-entitlement.plist"
+    },
+    "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/ChronosApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/Core/FileEvent.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/Core/FileSystemMonitor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/Core/HistoryBrowser.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/Core/HistoryDatabase.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/UI/EventListView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/UI/SettingsView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Sources/Chronos/UI/TimelineView.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/sources"
+    },
+    "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/ChronosApp.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/EventListView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/FileEvent.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/FileSystemMonitor.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/HistoryBrowser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/HistoryDatabase.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/SettingsView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/TimelineView.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.product/Objects.LinkFileList"
+    },
+    "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.derived/runner.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.build/sources"
+    },
+    "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/ChronosApp.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/EventListView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/FileEvent.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/FileSystemMonitor.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/HistoryBrowser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/HistoryDatabase.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/SettingsView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/Chronos.build/TimelineView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build/ChronosTests.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosPackageTests.product/Objects.LinkFileList"
+    },
+    "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/wica/Chronos/Tests/ChronosTests/ChronosTests.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build/sources"
+    },
+    "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}

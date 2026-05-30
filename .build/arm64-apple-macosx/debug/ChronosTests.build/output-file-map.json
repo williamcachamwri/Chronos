@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build/primary.swiftdeps"
+  },
+  "/Users/wica/Chronos/Tests/ChronosTests/ChronosTests.swift": {
+    "dependencies": "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build/ChronosTests.d",
+    "object": "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build/ChronosTests.swift.o",
+    "swiftmodule": "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build/ChronosTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build/ChronosTests.swiftdeps",
+    "diagnostics": "/Users/wica/Chronos/.build/arm64-apple-macosx/debug/ChronosTests.build/ChronosTests.dia"
+  }
+}
