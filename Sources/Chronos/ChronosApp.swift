@@ -67,8 +67,8 @@ struct ContentView: View {
             if showSettings {
                 SettingsModal(showSettings: $showSettings)
                     .transition(.asymmetric(
-                        insertion: .opacity.combined(with: .scale(scale: 0.95)).animation(A.spring),
-                        removal: .opacity.animation(A.fast)
+                        insertion: .opacity.combined(with: .scale(scale: 0.9)).animation(A.spring),
+                        removal: .opacity.combined(with: .scale(scale: 0.95)).animation(A.ease)
                     ))
             }
         }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SearchView: View {
-    @StateObject private var browser = HistoryBrowser.shared
+    @ObservedObject private var browser = HistoryBrowser.shared
     @Environment(\.colorScheme) var scheme
     @State private var query = ""
     @State private var results: [FileEvent] = []
@@ -60,7 +60,6 @@ struct SearchView: View {
             .padding(.vertical, 8)
             .background(t.card)
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(t.glassBorder, lineWidth: 0.8))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
 
             HStack {
                 Toggle("Include deleted files", isOn: $includeRemoved)

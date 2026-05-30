@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TimelineView: View {
-    @StateObject private var browser = HistoryBrowser.shared
+    @ObservedObject private var browser = HistoryBrowser.shared
     @Environment(\.colorScheme) var scheme
     @State private var dateFraction: Double = 1.0
     @State private var isDragging = false

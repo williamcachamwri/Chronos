@@ -6,7 +6,7 @@ actor HistoryDatabase {
 
     private var db: OpaquePointer?
     private let queue = DispatchQueue(label: "chronos.db", qos: .utility)
-    private let dbPath: String
+    let dbPath: String
 
     private init() {
         let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
@@ -86,23 +86,37 @@ actor HistoryDatabase {
     /// Logic: for each path, get the latest event at or before `date`;
     /// include it only if that event is not 'removed'.
     func snapshot(ofFolder folderPath: String, at date: Date) throws -> [FileSnapshot] {
+        // Simpler approach: fetch all events for the folder up to date,
+        // then keep only the latest per path.
         let sql = """
-        SELECT e.path, e.name, e.parent_path, e.event_type, e.timestamp, e.size, e.is_dir, e.inode
-        FROM events e
-        INNER JOIN (
-            SELECT path, MAX(timestamp) AS max_ts
-            FROM events
-            WHERE parent_path = ?1 AND timestamp <= ?2
-            GROUP BY path
-        ) latest ON e.path = latest.path AND e.timestamp = latest.max_ts
-        WHERE e.parent_path = ?1 AND e.event_type != 'removed'
-        ORDER BY e.name COLLATE NOCASE
+        SELECT path, name, parent_path, event_type, timestamp, size, is_dir, inode
+        FROM events
+        WHERE parent_path = ?1 AND timestamp <= ?2
+        ORDER BY timestamp DESC
         """
         let stmt = try prepare(sql)
         defer { sqlite3_finalize(stmt) }
         sqlite3_bind_text(stmt, 1, (folderPath as NSString).utf8String, -1, nil)
         sqlite3_bind_double(stmt, 2, date.timeIntervalSince1970)
-        return try decodeSnapshots(stmt: stmt)
+
+        let events = try decodeEvents(stmt: stmt)
+        var seen = Set<String>()
+        var result: [FileSnapshot] = []
+        for event in events {
+            guard seen.insert(event.path).inserted else { continue }
+            guard event.eventType != .removed else { continue }
+            result.append(FileSnapshot(
+                path: event.path,
+                name: event.name,
+                parentPath: event.parentPath,
+                lastEventType: event.eventType,
+                lastEventTime: event.timestamp,
+                size: event.size,
+                isDirectory: event.isDirectory,
+                inode: event.inode
+            ))
+        }
+        return result.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
     // MARK: - Diff

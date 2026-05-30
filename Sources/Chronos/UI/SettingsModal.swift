@@ -3,19 +3,19 @@ import SwiftUI
 struct SettingsModal: View {
     @Binding var showSettings: Bool
     @Environment(\.colorScheme) var scheme
-    @StateObject private var browser = HistoryBrowser.shared
+    @ObservedObject private var browser = HistoryBrowser.shared
     @State private var watchedFolders: [String] = []
     @State private var isAppearing = false
 
     var body: some View {
         let t = Theme(isDark: scheme == .dark)
         ZStack {
-            // Backdrop
-            t.bg.opacity(0.4)
+            // Backdrop — close without explicit animation (parent handles it)
+            t.bg.opacity(0.35)
                 .background(.ultraThinMaterial)
                 .ignoresSafeArea()
                 .onTapGesture {
-                    withAnimation(A.spring) { showSettings = false }
+                    showSettings = false
                 }
 
             // Modal card
@@ -28,7 +28,7 @@ struct SettingsModal: View {
                             .foregroundColor(t.text)
                         Spacer()
                         Button(action: {
-                            withAnimation(A.spring) { showSettings = false }
+                            showSettings = false
                         }) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 14, weight: .bold))
@@ -96,7 +96,7 @@ struct SettingsModal: View {
             }
             .frame(maxWidth: 520, maxHeight: 520)
             .padding(.horizontal, 40)
-            .scaleEffect(isAppearing ? 1 : 0.9)
+            .scaleEffect(isAppearing ? 1 : 0.88)
             .opacity(isAppearing ? 1 : 0)
             .animation(A.bouncy.delay(0.02), value: isAppearing)
         }
@@ -105,6 +105,9 @@ struct SettingsModal: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 isAppearing = true
             }
+        }
+        .onDisappear {
+            isAppearing = false
         }
     }
 

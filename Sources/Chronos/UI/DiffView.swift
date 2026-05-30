@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct DiffView: View {
-    @StateObject private var browser = HistoryBrowser.shared
+    @ObservedObject private var browser = HistoryBrowser.shared
     @Environment(\.colorScheme) var scheme
     @State private var fromFraction: Double = 0.0
     @State private var toFraction: Double = 1.0

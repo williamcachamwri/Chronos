@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 
 struct EventListView: View {
-    @StateObject private var browser = HistoryBrowser.shared
+    @ObservedObject private var browser = HistoryBrowser.shared
     @Environment(\.colorScheme) var scheme
     @State private var events: [FileEvent] = []
     @State private var timerCancellable: Cancellable?
