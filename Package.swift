@@ -11,11 +11,7 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "Chronos",
-            path: "Sources",
-            swiftSettings: [
-                .enableExperimentalFeature("StrictConcurrency"),
-                .unsafeFlags(["-warn-concurrency"], .when(configuration: .debug))
-            ]
+            path: "Sources"
         ),
         .testTarget(
             name: "ChronosTests",

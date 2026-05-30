@@ -1,59 +1,89 @@
 import SwiftUI
 
-// MARK: - Design System
+// MARK: - Liquid Glass Design System
 
 struct AppColors {
-    static let bg     = Color(red: 0.031, green: 0.031, blue: 0.039) // #08080a
-    static let bgElev = Color(red: 0.067, green: 0.067, blue: 0.075) // #111113
-    static let bgCard = Color(red: 0.051, green: 0.051, blue: 0.063) // #0d0d10
-    static let text   = Color(red: 0.945, green: 0.945, blue: 0.953) // #f1f1f3
-    static let muted  = Color(red: 0.557, green: 0.557, blue: 0.576) // #8e8e93
-    static let dim    = Color(red: 0.165, green: 0.165, blue: 0.176) // #2a2a2e
-    static let border = Color(red: 0.122, green: 0.122, blue: 0.137) // #1f1f23
-    static let accent = Color(red: 0.231, green: 0.510, blue: 0.965) // #3b82f6
-    static let accentDim = accent.opacity(0.12)
-    static let green  = Color(red: 0.204, green: 0.827, blue: 0.600) // #34d399
-    static let red    = Color(red: 0.973, green: 0.443, blue: 0.443) // #f87171
-    static let amber  = Color(red: 0.961, green: 0.620, blue: 0.043) // #f59e0b
+    // Atmospheric background — not pure black, but deep dark with subtle warmth
+    static let bg = Color(red: 0.04, green: 0.04, blue: 0.06)
+    static let bgGradient = LinearGradient(
+        colors: [
+            Color(red: 0.02, green: 0.02, blue: 0.05),
+            Color(red: 0.05, green: 0.03, blue: 0.07),
+            Color(red: 0.03, green: 0.04, blue: 0.06)
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    static let text   = Color.white
+    static let muted  = Color.white.opacity(0.55)
+    static let accent = Color(red: 0.35, green: 0.55, blue: 1.0) // softer blue
+    static let glassBorder = Color.white.opacity(0.18)
+    static let glassHighlight = Color.white.opacity(0.08)
+
+    static let green  = Color(red: 0.25, green: 0.85, blue: 0.50)
+    static let red    = Color(red: 1.0,  green: 0.35, blue: 0.35)
+    static let amber  = Color(red: 1.0,  green: 0.65, blue: 0.15)
 }
 
 struct AppFont {
     static let nav   = Font.system(size: 13, weight: .medium)
     static let bodyS = Font.system(size: 13, weight: .regular)
     static let bodyM = Font.system(size: 14, weight: .medium)
-    static let title = Font.system(size: 28, weight: .bold)
+    static let title = Font.system(size: 32, weight: .bold, design: .rounded)
     static let label = Font.system(size: 11, weight: .semibold)
     static let mono  = Font.system(size: 12, weight: .medium, design: .monospaced)
     static let time  = Font.system(size: 10, weight: .regular)
     static let badge = Font.system(size: 9,  weight: .semibold)
 }
 
-// MARK: - Smooth Animations
-
 struct Smooth {
-    static let spring = Animation.spring(response: 0.4, dampingFraction: 0.8, blendDuration: 0.2)
-    static let ease   = Animation.easeOut(duration: 0.3)
+    static let spring = Animation.spring(response: 0.45, dampingFraction: 0.82, blendDuration: 0.2)
+    static let ease   = Animation.easeOut(duration: 0.35)
     static let fast   = Animation.easeOut(duration: 0.2)
 }
 
-// MARK: - Reusable Components
+// MARK: - Liquid Glass Components
 
-struct GlassCard<Content: View>: View {
+struct LiquidGlassPanel<Content: View>: View {
+    let cornerRadius: CGFloat
     let content: Content
-    init(@ViewBuilder _ content: () -> Content) { self.content = content() }
+
+    init(cornerRadius: CGFloat = 18, @ViewBuilder content: () -> Content) {
+        self.cornerRadius = cornerRadius
+        self.content = content()
+    }
+
     var body: some View {
         content
-            .background(AppColors.bgCard.opacity(0.6))
             .background(.ultraThinMaterial)
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(AppColors.border.opacity(0.6), lineWidth: 1))
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(Color.white.opacity(0.03))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(AppColors.glassBorder, lineWidth: 0.8)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(
+                        LinearGradient(
+                            colors: [AppColors.glassHighlight, Color.clear],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     }
 }
 
-struct ChronosButton: View {
+struct LiquidGlassButton: View {
     let title: String
     let icon: String?
     let action: () -> Void
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
@@ -61,26 +91,38 @@ struct ChronosButton: View {
                 Text(title).font(AppFont.bodyS)
             }
             .foregroundColor(.white)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 7)
-            .background(AppColors.accent)
-            .clipShape(Capsule())
-            .shadow(color: AppColors.accent.opacity(0.3), radius: 8, x: 0, y: 2)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(AppColors.accent.opacity(0.85))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
+            )
+            .shadow(color: AppColors.accent.opacity(0.35), radius: 12, x: 0, y: 4)
         }
         .buttonStyle(.plain)
     }
 }
 
-struct ChronosButtonSecondary: View {
+struct LiquidGlassButtonSecondary: View {
     let title: String
     let action: () -> Void
+
     var body: some View {
         Button(action: action) {
             Text(title).font(AppFont.bodyS)
-                .foregroundColor(AppColors.muted)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 7)
-                .overlay(Capsule().stroke(AppColors.border, lineWidth: 1))
+                .foregroundColor(.white.opacity(0.8))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(AppColors.glassBorder, lineWidth: 0.8)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
     }
@@ -95,7 +137,8 @@ struct EventBadge: View {
             .foregroundColor(color)
             .padding(.horizontal, 5)
             .padding(.vertical, 2)
-            .background(color.opacity(0.12))
+            .background(color.opacity(0.15))
+            .background(.ultraThinMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 4))
     }
 }
@@ -145,7 +188,7 @@ func byteString(_ bytes: Int64) -> String {
     ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
 }
 
-// MARK: - Scroll Reveal
+// MARK: - Reveal Animation
 
 struct RevealModifier: ViewModifier {
     @State private var isVisible = false
@@ -153,7 +196,7 @@ struct RevealModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .opacity(isVisible ? 1 : 0)
-            .offset(y: isVisible ? 0 : 16)
+            .offset(y: isVisible ? 0 : 14)
             .onAppear {
                 withAnimation(.easeOut(duration: 0.5).delay(delay)) {
                     isVisible = true

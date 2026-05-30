@@ -2,13 +2,23 @@ import SwiftUI
 
 @main
 struct ChronosApp: App {
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .frame(minWidth: 960, minHeight: 640)
+            Group {
+                if hasCompletedOnboarding {
+                    ContentView()
+                        .frame(minWidth: 960, minHeight: 640)
+                } else {
+                    OnboardingView()
+                        .frame(minWidth: 640, minHeight: 540)
+                }
+            }
+            .background(AppColors.bgGradient)
         }
         .windowStyle(.hiddenTitleBar)
-        .defaultSize(width: 1100, height: 700)
+        .defaultSize(width: hasCompletedOnboarding ? 1100 : 640, height: hasCompletedOnboarding ? 700 : 580)
         .commands {
             CommandGroup(replacing: .newItem) {}
         }
@@ -44,7 +54,7 @@ struct ContentView: View {
                 .frame(minWidth: 200, idealWidth: 220)
         } detail: {
             ZStack {
-                AppColors.bg.ignoresSafeArea()
+                AppColors.bgGradient.ignoresSafeArea()
                 switch selectedTab {
                 case .timeline: TimelineView()
                 case .diff:     DiffView()
@@ -58,30 +68,30 @@ struct ContentView: View {
 
 struct Sidebar: View {
     @Binding var selectedTab: SidebarTab
+    @Environment(\.openSettings) private var openSettings
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
             HStack(spacing: 10) {
                 ZStack {
                     Circle()
-                        .fill(AppColors.accent.opacity(0.15))
-                        .frame(width: 32, height: 32)
+                        .fill(.ultraThinMaterial)
+                        .frame(width: 36, height: 36)
+                        .overlay(Circle().stroke(AppColors.glassBorder, lineWidth: 0.8))
                     Image(systemName: "clock.arrow.circlepath")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(AppColors.accent)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(AppColors.accent)
                 }
                 Text("Chronos")
                     .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(AppColors.text)
+                    .foregroundColor(.white)
                 Spacer()
             }
             .padding(.horizontal, 16)
             .padding(.top, 20)
             .padding(.bottom, 24)
 
-            // Tabs
-            VStack(spacing: 2) {
+            VStack(spacing: 3) {
                 ForEach(SidebarTab.allCases, id: \.self) { tab in
                     SidebarRow(
                         icon: tab.icon,
@@ -98,14 +108,14 @@ struct Sidebar: View {
 
             Spacer()
 
-            // Settings
             SidebarRow(icon: "gear", label: "Settings", isSelected: false) {
-                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                openSettings()
             }
             .padding(.horizontal, 10)
             .padding(.bottom, 16)
         }
-        .background(AppColors.bgElev)
+        .background(.ultraThinMaterial)
+        .background(AppColors.bg.opacity(0.7))
     }
 }
 
@@ -124,17 +134,25 @@ struct SidebarRow: View {
                     .frame(width: 22)
                 Text(label)
                     .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
-                    .foregroundColor(isSelected ? AppColors.text : AppColors.muted)
+                    .foregroundColor(isSelected ? .white : AppColors.muted)
                 Spacer()
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
-            .background(isSelected ? AppColors.accent.opacity(0.08) : Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isSelected ? AppColors.accent.opacity(0.15) : Color.clear, lineWidth: 1)
+            .background(
+                isSelected
+                    ? AppColors.accent.opacity(0.12)
+                    : Color.clear
             )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(.ultraThinMaterial.opacity(isSelected ? 1 : 0))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(isSelected ? AppColors.accent.opacity(0.25) : Color.clear, lineWidth: 0.8)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)
     }

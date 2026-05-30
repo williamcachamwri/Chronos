@@ -12,7 +12,7 @@ struct TimelineView: View {
             scrubberSection
             listSection
         }
-        .background(AppColors.bg)
+        .background(AppColors.bgGradient)
         .task {
             await browser.setup()
             updateFraction()
@@ -25,8 +25,6 @@ struct TimelineView: View {
             Task { await browser.setSnapshotDate(newDate) }
         }
     }
-
-    // MARK: - Top Bar
 
     private var topBar: some View {
         HStack(spacing: 12) {
@@ -52,9 +50,10 @@ struct TimelineView: View {
                     .foregroundColor(AppColors.accent)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
+                    .background(.ultraThinMaterial)
                     .background(AppColors.accent.opacity(0.08))
+                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(AppColors.accent.opacity(0.2), lineWidth: 0.5))
                     .clipShape(RoundedRectangle(cornerRadius: 6))
-                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(AppColors.accent.opacity(0.15), lineWidth: 0.5))
             }
 
             Button("Now") {
@@ -65,46 +64,44 @@ struct TimelineView: View {
             .foregroundColor(AppColors.accent)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
+            .background(.ultraThinMaterial)
             .background(AppColors.accent.opacity(0.08))
+            .overlay(RoundedRectangle(cornerRadius: 6).stroke(AppColors.accent.opacity(0.2), lineWidth: 0.5))
             .clipShape(RoundedRectangle(cornerRadius: 6))
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
-        .background(AppColors.bgElev)
-        .overlay(Divider().background(AppColors.border), alignment: .bottom)
+        .background(.ultraThinMaterial)
+        .overlay(Divider().background(AppColors.glassBorder), alignment: .bottom)
     }
-
-    // MARK: - Scrubber
 
     private var scrubberSection: some View {
         VStack(spacing: 8) {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    // Track
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(AppColors.dim.opacity(0.5))
+                        .fill(.ultraThinMaterial)
                         .frame(height: 6)
+                        .overlay(RoundedRectangle(cornerRadius: 4).stroke(AppColors.glassBorder, lineWidth: 0.5))
 
-                    // Fill
                     RoundedRectangle(cornerRadius: 4)
                         .fill(
                             LinearGradient(
-                                colors: [AppColors.accent.opacity(0.5), AppColors.accent],
+                                colors: [AppColors.accent.opacity(0.4), AppColors.accent],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
                         .frame(width: max(0, geo.size.width * dateFraction), height: 6)
 
-                    // Tick marks
                     if let range = browser.timeRange {
                         tickMarks(width: geo.size.width, range: range)
                     }
 
-                    // Thumb
                     Circle()
-                        .fill(AppColors.accent)
+                        .fill(.ultraThinMaterial)
                         .frame(width: isDragging ? 18 : 14, height: isDragging ? 18 : 14)
+                        .overlay(Circle().stroke(Color.white.opacity(0.3), lineWidth: 1))
                         .shadow(color: AppColors.accent.opacity(0.5), radius: isDragging ? 10 : 6)
                         .offset(x: geo.size.width * dateFraction - (isDragging ? 9 : 7))
                         .animation(Smooth.fast, value: isDragging)
@@ -123,7 +120,6 @@ struct TimelineView: View {
             }
             .frame(height: 24)
 
-            // Labels
             HStack {
                 if let range = browser.timeRange {
                     Text(range.earliest, style: .date)
@@ -138,8 +134,8 @@ struct TimelineView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
-        .background(AppColors.bg)
-        .overlay(Divider().background(AppColors.border), alignment: .bottom)
+        .background(.ultraThinMaterial)
+        .overlay(Divider().background(AppColors.glassBorder), alignment: .bottom)
     }
 
     private func tickMarks(width: CGFloat, range: (earliest: Date, latest: Date)) -> some View {
@@ -154,15 +150,13 @@ struct TimelineView: View {
                 ForEach(0..<count, id: \.self) { i in
                     let x = CGFloat(i * step) / CGFloat(days) * width
                     Rectangle()
-                        .fill(AppColors.text.opacity(0.06))
+                        .fill(Color.white.opacity(0.1))
                         .frame(width: 1, height: 6)
                         .position(x: x + 0.5, y: 12)
                 }
             }
         )
     }
-
-    // MARK: - List
 
     private var listSection: some View {
         ScrollView {
@@ -189,20 +183,21 @@ struct TimelineView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
         }
+        .background(AppColors.bgGradient)
     }
 
     private var emptyState: some View {
         VStack(spacing: 10) {
             Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: 40))
-                .foregroundColor(AppColors.muted.opacity(0.25))
+                .foregroundColor(AppColors.muted.opacity(0.2))
             Text("Nothing here at this point in time")
                 .font(AppFont.bodyM)
                 .foregroundColor(AppColors.muted)
             if browser.timeRange == nil {
                 Text("Chronos is recording changes. Make some file operations and check back.")
                     .font(AppFont.time)
-                    .foregroundColor(AppColors.muted.opacity(0.5))
+                    .foregroundColor(AppColors.muted.opacity(0.4))
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 300)
             }
@@ -210,8 +205,6 @@ struct TimelineView: View {
         .frame(maxWidth: .infinity, minHeight: 300)
         .padding()
     }
-
-    // MARK: - Helpers
 
     private func updateFraction() {
         guard let range = browser.timeRange else { return }
@@ -222,9 +215,7 @@ struct TimelineView: View {
 
     private func shortPath(_ path: String) -> String {
         let home = NSHomeDirectory()
-        if path.hasPrefix(home) {
-            return "~" + path.dropFirst(home.count)
-        }
+        if path.hasPrefix(home) { return "~" + path.dropFirst(home.count) }
         return path
     }
 
@@ -242,8 +233,6 @@ struct TimelineView: View {
     }
 }
 
-// MARK: - Snapshot Row
-
 struct SnapshotRow: View {
     let item: FileSnapshot
     let isHovered: Bool
@@ -257,7 +246,7 @@ struct SnapshotRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.name)
                         .font(AppFont.bodyS)
-                        .foregroundColor(AppColors.text)
+                        .foregroundColor(.white)
                         .lineLimit(1)
 
                     HStack(spacing: 6) {
@@ -279,12 +268,24 @@ struct SnapshotRow: View {
                 if item.isDirectory {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 9, weight: .bold))
-                        .foregroundColor(AppColors.muted.opacity(0.4))
+                        .foregroundColor(AppColors.muted.opacity(0.3))
                 }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 7)
-            .background(isHovered ? AppColors.bgElev.opacity(0.5) : Color.clear)
+            .background(
+                isHovered
+                    ? AppColors.accent.opacity(0.06)
+                    : Color.clear
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(.ultraThinMaterial.opacity(isHovered ? 1 : 0))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(isHovered ? AppColors.glassBorder : Color.clear, lineWidth: 0.8)
+            )
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .contentShape(Rectangle())
         }

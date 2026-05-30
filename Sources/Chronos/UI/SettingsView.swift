@@ -5,15 +5,15 @@ struct SettingsView: View {
     @State private var watchedFolders: [String] = []
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 24) {
             Text("Settings")
                 .font(AppFont.title)
-                .foregroundColor(AppColors.text)
+                .foregroundColor(.white)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("Watched Folders")
                     .font(AppFont.bodyM)
-                    .foregroundColor(AppColors.text)
+                    .foregroundColor(.white)
                 Text("Chronos monitors these folders for file-system changes.")
                     .font(AppFont.time)
                     .foregroundColor(AppColors.muted)
@@ -27,7 +27,7 @@ struct SettingsView: View {
                             .foregroundColor(AppColors.muted)
                         Text(path)
                             .font(AppFont.bodyS)
-                            .foregroundColor(AppColors.text)
+                            .foregroundColor(.white)
                             .lineLimit(1)
                         Spacer()
                         Button(action: { removeFolder(path) }) {
@@ -39,19 +39,20 @@ struct SettingsView: View {
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(AppColors.bgCard)
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.border, lineWidth: 1))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .background(.ultraThinMaterial)
+                    .background(Color.white.opacity(0.02))
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(AppColors.glassBorder, lineWidth: 0.8))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
             }
 
-            ChronosButton(title: "Add Folder...", icon: "plus") { addFolder() }
+            LiquidGlassButton(title: "Add Folder...", icon: "plus") { addFolder() }
 
             Spacer()
         }
-        .padding(24)
+        .padding(28)
         .frame(minWidth: 480, minHeight: 320)
-        .background(AppColors.bg)
+        .background(AppColors.bgGradient)
         .task {
             watchedFolders = (try? await HistoryDatabase.shared.watchedFolders()) ?? []
         }

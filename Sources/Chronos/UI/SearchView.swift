@@ -15,20 +15,20 @@ struct SearchView: View {
             searchBar
             listSection
         }
-        .background(AppColors.bg)
+        .background(AppColors.bgGradient)
     }
 
     private var topBar: some View {
         HStack {
             Text("Search History")
                 .font(AppFont.bodyM)
-                .foregroundColor(AppColors.text)
+                .foregroundColor(.white)
             Spacer()
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
-        .background(AppColors.bgElev)
-        .overlay(Divider().background(AppColors.border), alignment: .bottom)
+        .background(.ultraThinMaterial)
+        .overlay(Divider().background(AppColors.glassBorder), alignment: .bottom)
     }
 
     private var searchBar: some View {
@@ -40,7 +40,7 @@ struct SearchView: View {
 
                 TextField("Search file name...", text: $query)
                     .font(AppFont.bodyS)
-                    .foregroundColor(AppColors.text)
+                    .foregroundColor(.white)
                     .textFieldStyle(.plain)
                     .focused($isFocused)
                     .onSubmit { performSearch() }
@@ -59,9 +59,9 @@ struct SearchView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(AppColors.bgCard)
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(AppColors.border, lineWidth: 1))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .background(.ultraThinMaterial)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColors.glassBorder, lineWidth: 0.8))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
 
             HStack {
                 Toggle("Include deleted files", isOn: $includeRemoved)
@@ -69,13 +69,13 @@ struct SearchView: View {
                     .font(AppFont.time)
                     .foregroundColor(AppColors.muted)
                 Spacer()
-                ChronosButton(title: "Search", icon: "magnifyingglass") { performSearch() }
+                LiquidGlassButton(title: "Search", icon: "magnifyingglass") { performSearch() }
             }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
-        .background(AppColors.bg)
-        .overlay(Divider().background(AppColors.border), alignment: .bottom)
+        .background(.ultraThinMaterial)
+        .overlay(Divider().background(AppColors.glassBorder), alignment: .bottom)
     }
 
     private var listSection: some View {
@@ -103,13 +103,14 @@ struct SearchView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
         }
+        .background(AppColors.bgGradient)
     }
 
     private func emptyState(_ msg: String) -> some View {
         VStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 32))
-                .foregroundColor(AppColors.muted.opacity(0.2))
+                .foregroundColor(AppColors.muted.opacity(0.15))
             Text(msg)
                 .font(AppFont.bodyS)
                 .foregroundColor(AppColors.muted)
@@ -139,7 +140,7 @@ struct SearchRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(event.name)
                     .font(AppFont.bodyS)
-                    .foregroundColor(AppColors.text)
+                    .foregroundColor(.white)
                     .lineLimit(1)
 
                 HStack(spacing: 6) {
@@ -158,7 +159,15 @@ struct SearchRow: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
-        .background(isHovered ? AppColors.bgElev.opacity(0.5) : Color.clear)
+        .background(isHovered ? AppColors.accent.opacity(0.06) : Color.clear)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(.ultraThinMaterial.opacity(isHovered ? 1 : 0))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(isHovered ? AppColors.glassBorder : Color.clear, lineWidth: 0.8)
+        )
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .contentShape(Rectangle())
     }
