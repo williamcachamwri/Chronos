@@ -162,11 +162,15 @@ struct DiffView: View {
     }
 
     private func runDiff() {
-        guard let range = browser.timeRange else { return }
+        guard let range = browser.timeRange else {
+            isLoading = false; hasRun = true; diffs = []; return
+        }
         let total = range.latest.timeIntervalSince(range.earliest)
-        guard total > 0 else { return }
-        let from = range.earliest.addingTimeInterval(total * fromFraction)
-        let to   = range.earliest.addingTimeInterval(total * toFraction)
+        guard total > 0 else {
+            isLoading = false; hasRun = true; diffs = []; return
+        }
+        let from = range.earliest.addingTimeInterval(total * max(0, min(1, fromFraction)))
+        let to   = range.earliest.addingTimeInterval(total * max(0, min(1, toFraction)))
         isLoading = true
         hasRun = true
         Task {

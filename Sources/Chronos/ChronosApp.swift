@@ -44,6 +44,7 @@ enum SidebarTab: String, CaseIterable {
 struct ContentView: View {
     @State private var selectedTab: SidebarTab = .timeline
     @State private var showSettings = false
+    @ObservedObject private var browser = HistoryBrowser.shared
 
     var body: some View {
         ZStack {
@@ -71,6 +72,9 @@ struct ContentView: View {
                         removal: .opacity.combined(with: .scale(scale: 0.95)).animation(A.ease)
                     ))
             }
+        }
+        .task {
+            await browser.setup()
         }
     }
 }

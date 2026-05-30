@@ -14,8 +14,7 @@ struct TimelineView: View {
             scrubberSection(t: t)
             listSection(t: t)
         }
-        .task {
-            await browser.setup()
+        .onAppear {
             updateFraction()
         }
         .onChange(of: dateFraction) { _, new in

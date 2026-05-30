@@ -21,8 +21,8 @@ final class HistoryBrowser: ObservableObject {
     func setup() async {
         do {
             print("[Chronos] Setting up database...")
-            try await db.setup()
-            print("[Chronos] Database ready at \(db.dbPath)")
+            try await db.resetDatabase()
+            print("[Chronos] Database reset at \(db.dbPath)")
 
             let home = NSHomeDirectory()
             try? await db.addWatchedFolder(home + "/Desktop")

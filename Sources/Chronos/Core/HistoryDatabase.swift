@@ -15,6 +15,19 @@ actor HistoryDatabase {
         self.dbPath = supportDir.appendingPathComponent("history.db").path
     }
 
+    func resetDatabase() throws {
+        try queue.sync {
+            sqlite3_close(db)
+            db = nil
+            try? FileManager.default.removeItem(atPath: dbPath)
+            let rc = sqlite3_open(dbPath, &db)
+            guard rc == SQLITE_OK else {
+                throw DBError.openFailed(String(cString: sqlite3_errmsg(db)))
+            }
+            try createSchema()
+        }
+    }
+
     func setup() throws {
         try queue.sync {
             let rc = sqlite3_open(dbPath, &db)
@@ -89,7 +102,7 @@ actor HistoryDatabase {
         // Simpler approach: fetch all events for the folder up to date,
         // then keep only the latest per path.
         let sql = """
-        SELECT path, name, parent_path, event_type, timestamp, size, is_dir, inode
+        SELECT id, path, name, parent_path, event_type, timestamp, size, is_dir, inode
         FROM events
         WHERE parent_path = ?1 AND timestamp <= ?2
         ORDER BY timestamp DESC
@@ -103,6 +116,7 @@ actor HistoryDatabase {
         var seen = Set<String>()
         var result: [FileSnapshot] = []
         for event in events {
+            guard event.path != folderPath else { continue }
             guard seen.insert(event.path).inserted else { continue }
             guard event.eventType != .removed else { continue }
             result.append(FileSnapshot(
