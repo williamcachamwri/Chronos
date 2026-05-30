@@ -15,20 +15,17 @@ struct SearchView: View {
             searchBar
             listSection
         }
-        .background(AppColors.bgGradient)
     }
 
     private var topBar: some View {
         HStack {
             Text("Search History")
                 .font(AppFont.bodyM)
-                .foregroundColor(.white)
+                .foregroundColor(AppColors.text)
             Spacer()
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
-        .background(.ultraThinMaterial)
-        .overlay(Divider().background(AppColors.glassBorder), alignment: .bottom)
     }
 
     private var searchBar: some View {
@@ -40,7 +37,7 @@ struct SearchView: View {
 
                 TextField("Search file name...", text: $query)
                     .font(AppFont.bodyS)
-                    .foregroundColor(.white)
+                    .foregroundColor(AppColors.text)
                     .textFieldStyle(.plain)
                     .focused($isFocused)
                     .onSubmit { performSearch() }
@@ -59,8 +56,8 @@ struct SearchView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(.ultraThinMaterial)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColors.glassBorder, lineWidth: 0.8))
+            .background(AppColors.card)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColors.border, lineWidth: 0.8))
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
             HStack {
@@ -69,13 +66,11 @@ struct SearchView: View {
                     .font(AppFont.time)
                     .foregroundColor(AppColors.muted)
                 Spacer()
-                LiquidGlassButton(title: "Search", icon: "magnifyingglass") { performSearch() }
+                ChronosButton(title: "Search", icon: "magnifyingglass") { performSearch() }
             }
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 16)
-        .background(.ultraThinMaterial)
-        .overlay(Divider().background(AppColors.glassBorder), alignment: .bottom)
+        .padding(.vertical, 14)
     }
 
     private var listSection: some View {
@@ -101,9 +96,8 @@ struct SearchView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 6)
         }
-        .background(AppColors.bgGradient)
     }
 
     private func emptyState(_ msg: String) -> some View {
@@ -140,7 +134,7 @@ struct SearchRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(event.name)
                     .font(AppFont.bodyS)
-                    .foregroundColor(.white)
+                    .foregroundColor(AppColors.text)
                     .lineLimit(1)
 
                 HStack(spacing: 6) {
@@ -159,14 +153,10 @@ struct SearchRow: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
-        .background(isHovered ? AppColors.accent.opacity(0.06) : Color.clear)
+        .background(isHovered ? AppColors.surface.opacity(0.5) : Color.clear)
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .fill(.ultraThinMaterial.opacity(isHovered ? 1 : 0))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(isHovered ? AppColors.glassBorder : Color.clear, lineWidth: 0.8)
+                .stroke(isHovered ? AppColors.border : Color.clear, lineWidth: 0.6)
         )
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .contentShape(Rectangle())

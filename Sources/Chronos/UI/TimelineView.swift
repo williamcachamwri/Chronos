@@ -12,7 +12,6 @@ struct TimelineView: View {
             scrubberSection
             listSection
         }
-        .background(AppColors.bgGradient)
         .task {
             await browser.setup()
             updateFraction()
@@ -50,9 +49,8 @@ struct TimelineView: View {
                     .foregroundColor(AppColors.accent)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
-                    .background(.ultraThinMaterial)
-                    .background(AppColors.accent.opacity(0.08))
-                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(AppColors.accent.opacity(0.2), lineWidth: 0.5))
+                    .background(AppColors.accentDim)
+                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(AppColors.accent.opacity(0.15), lineWidth: 0.5))
                     .clipShape(RoundedRectangle(cornerRadius: 6))
             }
 
@@ -64,15 +62,12 @@ struct TimelineView: View {
             .foregroundColor(AppColors.accent)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
-            .background(.ultraThinMaterial)
-            .background(AppColors.accent.opacity(0.08))
-            .overlay(RoundedRectangle(cornerRadius: 6).stroke(AppColors.accent.opacity(0.2), lineWidth: 0.5))
+            .background(AppColors.accentDim)
+            .overlay(RoundedRectangle(cornerRadius: 6).stroke(AppColors.accent.opacity(0.15), lineWidth: 0.5))
             .clipShape(RoundedRectangle(cornerRadius: 6))
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
-        .background(.ultraThinMaterial)
-        .overlay(Divider().background(AppColors.glassBorder), alignment: .bottom)
     }
 
     private var scrubberSection: some View {
@@ -80,14 +75,13 @@ struct TimelineView: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(.ultraThinMaterial)
+                        .fill(AppColors.dim.opacity(0.4))
                         .frame(height: 6)
-                        .overlay(RoundedRectangle(cornerRadius: 4).stroke(AppColors.glassBorder, lineWidth: 0.5))
 
                     RoundedRectangle(cornerRadius: 4)
                         .fill(
                             LinearGradient(
-                                colors: [AppColors.accent.opacity(0.4), AppColors.accent],
+                                colors: [AppColors.accent.opacity(0.5), AppColors.accent],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -99,11 +93,10 @@ struct TimelineView: View {
                     }
 
                     Circle()
-                        .fill(.ultraThinMaterial)
-                        .frame(width: isDragging ? 18 : 14, height: isDragging ? 18 : 14)
-                        .overlay(Circle().stroke(Color.white.opacity(0.3), lineWidth: 1))
-                        .shadow(color: AppColors.accent.opacity(0.5), radius: isDragging ? 10 : 6)
-                        .offset(x: geo.size.width * dateFraction - (isDragging ? 9 : 7))
+                        .fill(AppColors.accent)
+                        .frame(width: isDragging ? 16 : 12, height: isDragging ? 16 : 12)
+                        .shadow(color: AppColors.accent.opacity(0.5), radius: isDragging ? 10 : 5)
+                        .offset(x: geo.size.width * dateFraction - (isDragging ? 8 : 6))
                         .animation(Smooth.fast, value: isDragging)
                 }
                 .contentShape(Rectangle())
@@ -124,18 +117,16 @@ struct TimelineView: View {
                 if let range = browser.timeRange {
                     Text(range.earliest, style: .date)
                         .font(AppFont.time)
-                        .foregroundColor(AppColors.muted.opacity(0.6))
+                        .foregroundColor(AppColors.muted.opacity(0.5))
                     Spacer()
                     Text(range.latest, style: .date)
                         .font(AppFont.time)
-                        .foregroundColor(AppColors.muted.opacity(0.6))
+                        .foregroundColor(AppColors.muted.opacity(0.5))
                 }
             }
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 16)
-        .background(.ultraThinMaterial)
-        .overlay(Divider().background(AppColors.glassBorder), alignment: .bottom)
+        .padding(.vertical, 14)
     }
 
     private func tickMarks(width: CGFloat, range: (earliest: Date, latest: Date)) -> some View {
@@ -150,7 +141,7 @@ struct TimelineView: View {
                 ForEach(0..<count, id: \.self) { i in
                     let x = CGFloat(i * step) / CGFloat(days) * width
                     Rectangle()
-                        .fill(Color.white.opacity(0.1))
+                        .fill(Color.white.opacity(0.08))
                         .frame(width: 1, height: 6)
                         .position(x: x + 0.5, y: 12)
                 }
@@ -181,9 +172,8 @@ struct TimelineView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 6)
         }
-        .background(AppColors.bgGradient)
     }
 
     private var emptyState: some View {
@@ -246,7 +236,7 @@ struct SnapshotRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.name)
                         .font(AppFont.bodyS)
-                        .foregroundColor(.white)
+                        .foregroundColor(AppColors.text)
                         .lineLimit(1)
 
                     HStack(spacing: 6) {
@@ -273,18 +263,10 @@ struct SnapshotRow: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 7)
-            .background(
-                isHovered
-                    ? AppColors.accent.opacity(0.06)
-                    : Color.clear
-            )
+            .background(isHovered ? AppColors.surface.opacity(0.5) : Color.clear)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(.ultraThinMaterial.opacity(isHovered ? 1 : 0))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isHovered ? AppColors.glassBorder : Color.clear, lineWidth: 0.8)
+                    .stroke(isHovered ? AppColors.border : Color.clear, lineWidth: 0.6)
             )
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .contentShape(Rectangle())

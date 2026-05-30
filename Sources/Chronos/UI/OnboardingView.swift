@@ -7,46 +7,39 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            // Atmospheric animated gradient background
-            AppColors.bgGradient
+            AppColors.bg.ignoresSafeArea()
+
+            // Grid + orbs (same as main app)
+            GridPattern()
+                .opacity(0.02)
                 .ignoresSafeArea()
-                .overlay(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 0.1, green: 0.1, blue: 0.2).opacity(0.4),
-                            Color(red: 0.05, green: 0.05, blue: 0.1).opacity(0.2),
-                            Color(red: 0.08, green: 0.06, blue: 0.12).opacity(0.4)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .ignoresSafeArea()
-                )
+
+            GlowOrb()
+                .frame(width: 600, height: 400)
+                .position(x: 320, y: 120)
+                .ignoresSafeArea()
+
+            FloatingParticles()
+                .ignoresSafeArea()
 
             VStack(spacing: 32) {
                 Spacer()
 
-                // Logo area
                 ZStack {
                     Circle()
-                        .fill(.ultraThinMaterial)
-                        .frame(width: 80, height: 80)
-                        .overlay(
-                            Circle()
-                                .stroke(AppColors.glassBorder, lineWidth: 1)
-                        )
+                        .fill(AppColors.accent.opacity(0.1))
+                        .frame(width: 72, height: 72)
                     Image(systemName: "clock.arrow.circlepath")
-                        .font(.system(size: 32, weight: .semibold))
-                        .foregroundStyle(AppColors.accent)
+                        .font(.system(size: 28, weight: .semibold))
+                        .foregroundColor(AppColors.accent)
                         .symbolEffect(.pulse, options: .repeating, value: animating)
                 }
                 .onAppear { animating = true }
 
-                // Steps
-                VStack(spacing: 12) {
+                VStack(spacing: 10) {
                     Text(stepTitle)
-                        .font(AppFont.title)
-                        .foregroundColor(.white)
+                        .font(.system(size: 30, weight: .bold))
+                        .foregroundColor(AppColors.text)
 
                     Text(stepDescription)
                         .font(AppFont.bodyS)
@@ -56,23 +49,24 @@ struct OnboardingView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                // Step-specific content
                 stepContent
 
                 Spacer()
 
-                // Dots + Button
                 VStack(spacing: 20) {
                     HStack(spacing: 6) {
                         ForEach(0..<3, id: \.self) { i in
                             Circle()
-                                .fill(step == i ? AppColors.accent : Color.white.opacity(0.2))
+                                .fill(step == i ? AppColors.accent : AppColors.dim)
                                 .frame(width: step == i ? 8 : 6, height: step == i ? 8 : 6)
                                 .animation(Smooth.spring, value: step)
                         }
                     }
 
-                    LiquidGlassButton(title: step == 2 ? "Get Started" : "Continue", icon: step == 2 ? "arrow.right" : "chevron.right") {
+                    ChronosButton(
+                        title: step == 2 ? "Get Started" : "Continue",
+                        icon: step == 2 ? "arrow.right" : "chevron.right"
+                    ) {
                         withAnimation(Smooth.spring) {
                             if step < 2 {
                                 step += 1
@@ -110,44 +104,47 @@ struct OnboardingView: View {
     private var stepContent: some View {
         switch step {
         case 1:
-            LiquidGlassPanel(cornerRadius: 16) {
-                VStack(alignment: .leading, spacing: 14) {
-                    PermissionRow(icon: "folder.badge.gearshape", title: "Full Disk Access", subtitle: "Monitor file changes across your Mac", granted: hasFullDiskAccess())
-                    Divider().background(AppColors.glassBorder)
-                    PermissionRow(icon: "accessibility", title: "Accessibility", subtitle: "Optional: global shortcuts in the future", granted: false)
-                }
-                .padding(16)
+            VStack(alignment: .leading, spacing: 14) {
+                PermissionRow(icon: "folder.badge.gearshape", title: "Full Disk Access", subtitle: "Monitor file changes across your Mac", granted: hasFullDiskAccess())
+                Divider().background(AppColors.border)
+                PermissionRow(icon: "accessibility", title: "Accessibility", subtitle: "Optional: global shortcuts in the future", granted: false)
             }
+            .padding(16)
+            .background(AppColors.card)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColors.border, lineWidth: 0.8))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
             .frame(maxWidth: 360)
 
         case 2:
-            LiquidGlassPanel(cornerRadius: 16) {
-                VStack(alignment: .leading, spacing: 10) {
-                    ForEach(["Desktop", "Documents", "Downloads"], id: \.self) { folder in
-                        HStack(spacing: 10) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(AppColors.green)
-                                .font(.system(size: 14))
-                            Text(folder)
-                                .font(AppFont.bodyS)
-                                .foregroundColor(.white)
-                            Spacer()
-                        }
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(["Desktop", "Documents", "Downloads"], id: \.self) { folder in
+                    HStack(spacing: 10) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(AppColors.green)
+                            .font(.system(size: 14))
+                        Text(folder)
+                            .font(AppFont.bodyS)
+                            .foregroundColor(AppColors.text)
+                        Spacer()
                     }
                 }
-                .padding(16)
             }
+            .padding(16)
+            .background(AppColors.card)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColors.border, lineWidth: 0.8))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
             .frame(maxWidth: 260)
 
         default:
-            LiquidGlassPanel(cornerRadius: 16) {
-                HStack(spacing: 16) {
-                    featureItem(icon: "clock.arrow.circlepath", title: "Timeline", subtitle: "Drag to travel back in time")
-                    featureItem(icon: "arrow.left.arrow.right", title: "Diff", subtitle: "Compare any two moments")
-                    featureItem(icon: "magnifyingglass", title: "Search", subtitle: "Find deleted files")
-                }
-                .padding(20)
+            HStack(spacing: 16) {
+                featureItem(icon: "clock.arrow.circlepath", title: "Timeline", subtitle: "Drag to travel back in time")
+                featureItem(icon: "arrow.left.arrow.right", title: "Diff", subtitle: "Compare any two moments")
+                featureItem(icon: "magnifyingglass", title: "Search", subtitle: "Find deleted files")
             }
+            .padding(20)
+            .background(AppColors.card)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColors.border, lineWidth: 0.8))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
             .frame(maxWidth: 440)
         }
     }
@@ -159,7 +156,7 @@ struct OnboardingView: View {
                 .foregroundColor(AppColors.accent)
             Text(title)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(AppColors.text)
             Text(subtitle)
                 .font(.system(size: 10))
                 .foregroundColor(AppColors.muted)
@@ -188,7 +185,7 @@ struct PermissionRow: View {
                 .frame(width: 24)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(AppFont.bodyS).foregroundColor(.white)
+                Text(title).font(AppFont.bodyS).foregroundColor(AppColors.text)
                 Text(subtitle).font(AppFont.time).foregroundColor(AppColors.muted)
             }
 
@@ -207,7 +204,7 @@ struct PermissionRow: View {
                 .foregroundColor(AppColors.accent)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .background(AppColors.accent.opacity(0.1))
+                .background(AppColors.accentDim)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
             }
         }

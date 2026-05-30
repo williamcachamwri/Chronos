@@ -31,20 +31,17 @@ struct DiffView: View {
             controls
             listSection
         }
-        .background(AppColors.bgGradient)
     }
 
     private var topBar: some View {
         HStack {
             Text("Diff")
                 .font(AppFont.bodyM)
-                .foregroundColor(.white)
+                .foregroundColor(AppColors.text)
             Spacer()
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
-        .background(.ultraThinMaterial)
-        .overlay(Divider().background(AppColors.glassBorder), alignment: .bottom)
     }
 
     private var controls: some View {
@@ -55,7 +52,7 @@ struct DiffView: View {
             }
 
             HStack(spacing: 8) {
-                LiquidGlassButton(title: "Compare", icon: "arrow.left.arrow.right") { runDiff() }
+                ChronosButton(title: "Compare", icon: "arrow.left.arrow.right") { runDiff() }
                 Spacer()
                 Picker("", selection: $filter) {
                     ForEach(DiffFilter.allCases, id: \.self) { f in
@@ -67,9 +64,7 @@ struct DiffView: View {
             }
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 16)
-        .background(.ultraThinMaterial)
-        .overlay(Divider().background(AppColors.glassBorder), alignment: .bottom)
+        .padding(.vertical, 14)
     }
 
     private func datePicker(label: String, fraction: Binding<Double>, range: (earliest: Date, latest: Date)?) -> some View {
@@ -80,16 +75,14 @@ struct DiffView: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(.ultraThinMaterial)
+                        .fill(AppColors.dim.opacity(0.4))
                         .frame(height: 6)
-                        .overlay(RoundedRectangle(cornerRadius: 4).stroke(AppColors.glassBorder, lineWidth: 0.5))
                     RoundedRectangle(cornerRadius: 4)
                         .fill(AppColors.accent.opacity(0.7))
                         .frame(width: max(0, geo.size.width * fraction.wrappedValue), height: 6)
                     Circle()
-                        .fill(.ultraThinMaterial)
+                        .fill(AppColors.accent)
                         .frame(width: 14, height: 14)
-                        .overlay(Circle().stroke(Color.white.opacity(0.3), lineWidth: 1))
                         .shadow(color: AppColors.accent.opacity(0.4), radius: 6)
                         .offset(x: geo.size.width * fraction.wrappedValue - 7)
                 }
@@ -132,9 +125,8 @@ struct DiffView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 6)
         }
-        .background(AppColors.bgGradient)
     }
 
     private func emptyState(_ msg: String) -> some View {
@@ -180,7 +172,7 @@ struct DiffRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(diff.name)
                     .font(AppFont.bodyS)
-                    .foregroundColor(.white)
+                    .foregroundColor(AppColors.text)
                     .lineLimit(1)
 
                 if diff.status == .modified {
@@ -193,7 +185,7 @@ struct DiffRow: View {
                             .foregroundColor(AppColors.muted)
                         Text(byteString(diff.newSize))
                             .font(AppFont.time)
-                            .foregroundColor(.white)
+                            .foregroundColor(AppColors.text)
                     }
                 }
             }
@@ -204,14 +196,10 @@ struct DiffRow: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
-        .background(isHovered ? AppColors.accent.opacity(0.06) : Color.clear)
+        .background(isHovered ? AppColors.surface.opacity(0.5) : Color.clear)
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .fill(.ultraThinMaterial.opacity(isHovered ? 1 : 0))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(isHovered ? AppColors.glassBorder : Color.clear, lineWidth: 0.8)
+                .stroke(isHovered ? AppColors.border : Color.clear, lineWidth: 0.6)
         )
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .contentShape(Rectangle())

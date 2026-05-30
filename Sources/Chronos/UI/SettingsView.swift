@@ -8,12 +8,12 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 24) {
             Text("Settings")
                 .font(AppFont.title)
-                .foregroundColor(.white)
+                .foregroundColor(AppColors.text)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("Watched Folders")
                     .font(AppFont.bodyM)
-                    .foregroundColor(.white)
+                    .foregroundColor(AppColors.text)
                 Text("Chronos monitors these folders for file-system changes.")
                     .font(AppFont.time)
                     .foregroundColor(AppColors.muted)
@@ -27,7 +27,7 @@ struct SettingsView: View {
                             .foregroundColor(AppColors.muted)
                         Text(path)
                             .font(AppFont.bodyS)
-                            .foregroundColor(.white)
+                            .foregroundColor(AppColors.text)
                             .lineLimit(1)
                         Spacer()
                         Button(action: { removeFolder(path) }) {
@@ -39,20 +39,18 @@ struct SettingsView: View {
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(.ultraThinMaterial)
-                    .background(Color.white.opacity(0.02))
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(AppColors.glassBorder, lineWidth: 0.8))
+                    .background(AppColors.card)
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(AppColors.border, lineWidth: 0.8))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
             }
 
-            LiquidGlassButton(title: "Add Folder...", icon: "plus") { addFolder() }
+            ChronosButton(title: "Add Folder...", icon: "plus") { addFolder() }
 
             Spacer()
         }
         .padding(28)
         .frame(minWidth: 480, minHeight: 320)
-        .background(AppColors.bgGradient)
         .task {
             watchedFolders = (try? await HistoryDatabase.shared.watchedFolders()) ?? []
         }
